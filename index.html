@@ -18,7 +18,7 @@
 #psyche-orb{position:absolute;z-index:1;pointer-events:none;right:-9%;top:-20%;width:min(88vw,1050px);height:138vh;aspect-ratio:1;background:repeating-conic-gradient(from 35deg,rgba(255,74,145,.36) 0deg 9deg,transparent 12deg 24deg,rgba(83,103,255,.43) 29deg 34deg,transparent 38deg 46deg,rgba(255,181,95,.24) 50deg 56deg,transparent 62deg 80deg),repeating-radial-gradient(circle at 50% 50%,transparent 0 30px,rgba(166,94,251,.14) 32px 35px,transparent 38px 62px);border-radius:50%;mix-blend-mode:screen;mask-image:radial-gradient(circle at center,transparent 0%,rgba(0,0,0,.7) 23%,rgba(0,0,0,.42) 43%,transparent 70%);opacity:0;transform:rotate(0deg);animation:psychSpin 38s linear infinite;transition:opacity .5s}body[data-mode="title"] #psyche-orb{opacity:.42}body[data-mode="select"] #psyche-orb{opacity:.45}body[data-mode="fight"] #psyche-orb{opacity:.13}@keyframes psychSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){#psyche-orb{animation:none}}
 </style></head><body>
 <canvas id="game"></canvas><div id="psyche-orb"></div><div id="vignette"></div><div id="grain"></div><div id="impact-flash"></div><div id="loading">RAUDRA<small>AWAKENING THE ARENA</small></div>
-<section id="title-screen" class="screen active"><div class="brand-top">ADA <b>✦</b> ORIGINALS &nbsp; / &nbsp; PROTOTYPE 01</div><div class="title-panel"><div class="eyebrow">SOUTHERN CINEMA × ARKHAM-INSPIRED COMBAT</div><h1 class="hero-title">RAUDRA</h1><div class="title-sub">NEON RIOT <span style="opacity:.48">/</span> MASS REIMAGINED</div><p class="title-note">Three fighters. One electric city. Every strike writes a legend.</p><div class="title-actions"><button id="start-btn" class="action">ENTER THE ARENA <span>➜</span></button><button class="ghost" data-open="settings">⚙ SETTINGS</button></div></div><span class="side-stamp">A PSYCHEDELIC VOXEL BRAWLER • V0.1</span></section>
+<section id="title-screen" class="screen active"><div class="brand-top">ADA <b>✦</b> ORIGINALS &nbsp; / &nbsp; PROTOTYPE 02</div><div class="title-panel"><div class="eyebrow">SOUTHERN CINEMA × ARKHAM-INSPIRED COMBAT</div><h1 class="hero-title">RAUDRA</h1><div class="title-sub">NEON RIOT <span style="opacity:.48">/</span> MASS REIMAGINED</div><p class="title-note">Three fighters. One electric city. Every strike writes a legend.</p><div class="title-actions"><button id="start-btn" class="action">ENTER THE ARENA <span>➜</span></button><button class="ghost" data-open="settings">⚙ SETTINGS</button></div></div><span class="side-stamp">A PSYCHEDELIC VOXEL BRAWLER • V0.2</span></section>
 <section id="select-screen" class="screen"><div class="selection-panel"><div class="eyebrow">01 / CHOOSE YOUR LEGEND</div><h2 class="selection-title">THE <span class="outline-type">FIGHTERS</span></h2><div class="fighter-list" id="fighter-list"><button class="fighter-option active" data-hero="fury"><span class="fighter-num">01</span><span><b>AARAN</b><small>THE FURY / RAW FORCE</small></span></button><button class="fighter-option" data-hero="maverick"><span class="fighter-num">02</span><span><b>VAAN</b><small>THE MAVERICK / PRECISION</small></span></button><button class="fighter-option" data-hero="titan"><span class="fighter-num">03</span><span><b>VEER</b><small>THE TITAN / MASS POWER</small></span></button></div><div class="fighter-info"><div class="eyebrow" id="hero-sub">EARTH • FIRE • FEROCITY</div><h3 id="hero-name">AARAN</h3><p id="hero-desc">Wild hooks, elbows and brutal close-range strikes.</p><div class="trait" id="hero-signature">SIGNATURE / EARTHBREAKER</div></div><div class="select-actions"><button id="fight-btn" class="action">UNLEASH FURY <span>➜</span></button><button id="back-btn" class="ghost">← BACK</button></div></div><div id="hero-id">01</div></section>
 <section id="hud-screen" class="screen"><div class="hud-top"><div class="hud-name" id="hud-name">AARAN</div><div class="hud-bars"><div class="hud-lbl"><span>VITALITY</span><span id="hp-num">160</span></div><div class="hud-track"><div class="hud-fill" id="hp-bar" style="width:100%"></div></div><div class="hud-lbl"><span>MASS / FINISHER</span><span id="rage-num">0%</span></div><div class="hud-track"><div class="hud-fill rage" id="rage-bar" style="width:0%"></div></div></div></div><div id="wave-hud"><strong id="wave-num">WAVE 01 / 03</strong><span id="enemy-num">3 FIGHTERS REMAIN</span></div><div id="combat-hint">WASD MOVE &nbsp; • &nbsp; J ATTACK &nbsp; • &nbsp; K COUNTER<br>HOLD J HEAVY &nbsp; • &nbsp; J+K FINISHER</div><button id="pause-btn" aria-label="Pause">Ⅱ</button><div id="moment-text"></div><div id="combo"></div></section>
 <div id="controls"><div id="stick-zone"><div id="stick-base"><div id="stick-knob"></div></div></div><div id="fight-buttons"><button id="btn-block" aria-label="Counter or block">⛨</button><button id="btn-attack" aria-label="Attack">✊</button></div></div>
@@ -188,6 +188,1674 @@ function animate(f,dt,time){
 }
 R.heroes=heroes;R.enemyStyles=enemyStyles;R.buildCharacter=buildCharacter;R.animateCharacter=animate;R.voxel=vox;R.voxelMaterial=vm;R.mat=mat;
 })(window.RAUDRA=window.RAUDRA||{});
+
+/* Toofan's authored 2.5cm sculpt, skinned rig and full-body pose/move library,
+   extracted from the user's provided toofan-build97 source for RAUDRA V0.2.
+   Local modules, no network imports; modified to remove facial features and add
+   three original hero / four purple-enemy palettes. */
+(function(R){'use strict';const defs={},cache={};
+function resolve(from,p){if(p.charAt(0)!=='.')return p;let arr=from.split('/');arr.pop();for(const c of p.split('/')){if(c==='..')arr.pop();else if(c!=='.')arr.push(c)}return arr.join('/')}
+function requireModule(name){if(cache[name])return cache[name].exports;const fn=defs[name];if(!fn)throw Error('missing Toofan module '+name);const m={exports:{}};cache[name]=m;fn(m,m.exports,(path)=>requireModule(resolve(name,path)));return m.exports;}
+defs["data/skeleton"]=function(module,exports,require){
+/* data layer: hero skeleton layout in voxel units (1 voxel = 2.5 cm). Offsets are relative to the parent joint.
+   Facing is +z, up is +y, the hero's left is +x. Lead limbs are "A", rear limbs are "B". */
+'use strict';
+
+var SKEL = {
+  VS: 0.025,
+  hipY: 34,                    /* hip centre above the sole */
+  spine: [0, 6, 0],            /* waist, from hips */
+  neck: [0, 19, 0],            /* neck base, from spine */
+  head: [0, 3.0, 0],           /* jaw hinge, from neck base */
+  hair: [0, 4.5, -3.0],        /* where the long hair leaves the back of the skull, from head joint */
+  hairStep: [0, -4.5, 0],
+  beard: [0, 0.2, 5.4],        /* where the beard hangs from the chin, from head joint */
+  guitarBack: { pos: [1, -1, -9.5], rot: [-6, 180, -35] },  /* slung on the back: spine-local voxel units, degrees (YXZ) */
+  shoulder: [10.4, 17.5, 0],   /* mirrored for the right side, from spine */
+  elbow: [0, -12, 0],
+  wrist: [0, -10.5, 0],
+  hip: [4.6, 0, 0],            /* mirrored, from hips */
+  knee: [0, -16, 0],
+  ankle: [0, -15, 0],
+  toe: [0, -2, 5.5]            /* ball of the foot, from ankle */
+};
+
+module.exports = SKEL;
+
+};
+defs["data/poses"]=function(module,exports,require){
+/* data layer: pose library, sequences and joint ranges. Angles are degrees, offsets are metres.
+   A = lead side, B = rear side. Missing keys mean 0, which is the arms-down standing pose.
+   Arm keys: sx pitch forward, sz out to the side, sy twist, e elbow bend, pr forearm twist, w wrist.
+   Leg keys: hx swing forward, hz out to the side, hy twist, k knee bend, a ankle (toes up +), t toes bend up. */
+'use strict';
+
+var JOINTS = [
+  { group: 'Hips', rows: [['hip.y', 'Height', -0.8, 0.2, 0.01, 'm'], ['hip.x', 'Shift side', -0.3, 0.3, 0.01, 'm'], ['hip.z', 'Shift forward', -0.4, 0.4, 0.01, 'm'],
+                          ['hip.rx', 'Lean', -100, 100, 1], ['hip.ry', 'Turn', -180, 180, 1], ['hip.rz', 'Tilt', -60, 60, 1]] },
+  { group: 'Torso and head', rows: [['spine.rx', 'Torso lean', -40, 70, 1], ['spine.ry', 'Torso twist', -60, 60, 1], ['spine.rz', 'Torso tilt', -35, 35, 1],
+                          ['neck.rx', 'Neck nod', -35, 45, 1], ['neck.ry', 'Neck turn', -60, 60, 1], ['neck.rz', 'Neck tilt', -30, 30, 1],
+                          ['head.rx', 'Head nod', -40, 45, 1], ['head.ry', 'Head turn', -60, 60, 1], ['head.rz', 'Head tilt', -30, 30, 1]] },
+  { group: 'Lead arm', rows: [['armA.sx', 'Shoulder forward', -70, 185, 1], ['armA.sz', 'Shoulder out', -40, 170, 1], ['armA.sy', 'Upper arm twist', -90, 90, 1],
+                          ['armA.e', 'Elbow bend', 0, 150, 1], ['armA.pr', 'Forearm twist', -90, 90, 1], ['armA.w', 'Wrist', -70, 70, 1]] },
+  { group: 'Rear arm', rows: [['armB.sx', 'Shoulder forward', -70, 185, 1], ['armB.sz', 'Shoulder out', -40, 170, 1], ['armB.sy', 'Upper arm twist', -90, 90, 1],
+                          ['armB.e', 'Elbow bend', 0, 150, 1], ['armB.pr', 'Forearm twist', -90, 90, 1], ['armB.w', 'Wrist', -70, 70, 1]] },
+  { group: 'Guitar', rows: [['gtr.on', 'Held (0 = on back)', 0, 1, 0.01], ['gtr.px', 'Grip side', -30, 40, 1], ['gtr.py', 'Grip height', -10, 50, 1], ['gtr.pz', 'Grip forward', -20, 40, 1],
+                          ['gtr.rx', 'Tilt x', -180, 180, 1], ['gtr.ry', 'Turn y', -180, 180, 1], ['gtr.rz', 'Roll z', -180, 180, 1], ['gtr.gy', 'Grip on neck', -10, 30, 1],
+                          ['gtr.ya', 'Lead hand', -10, 32, 1], ['gtr.yb', 'Rear hand', -10, 32, 1]] },
+  { group: 'Lead leg', rows: [['legA.hx', 'Thigh forward', -40, 125, 1], ['legA.hz', 'Thigh out', -25, 90, 1], ['legA.hy', 'Thigh twist', -50, 50, 1],
+                          ['legA.k', 'Knee bend', 0, 150, 1], ['legA.a', 'Ankle', -50, 30, 1], ['legA.t', 'Toes', 0, 60, 1]] },
+  { group: 'Rear leg', rows: [['legB.hx', 'Thigh forward', -40, 125, 1], ['legB.hz', 'Thigh out', -25, 90, 1], ['legB.hy', 'Thigh twist', -50, 50, 1],
+                          ['legB.k', 'Knee bend', 0, 150, 1], ['legB.a', 'Ankle', -50, 30, 1], ['legB.t', 'Toes', 0, 60, 1]] }
+];
+
+var STAND = { 'armA.sz': 7, 'armB.sz': 7, 'armA.e': 10, 'armB.e': 10, 'armA.sx': 2, 'armB.sx': 2, 'legA.hz': 3, 'legB.hz': 3 };
+
+var POSES = {
+  stand: STAND,
+  guard: {
+    'hip.y': -0.07, 'hip.ry': -30, 'hip.rx': 3, 'spine.ry': 10, 'spine.rx': 8, 'neck.rx': -3, 'head.rx': 10, 'head.ry': 20,
+    'armA.sx': 44, 'armA.sz': 10, 'armA.e': 96, 'armA.pr': -10,
+    'armB.sx': 34, 'armB.sz': 12, 'armB.e': 112, 'armB.pr': 10,
+    'legA.hx': 24, 'legA.hz': 12, 'legA.k': 22, 'legA.a': -4,
+    'legB.hx': -14, 'legB.hz': 16, 'legB.k': 22, 'legB.a': -18, 'legB.t': 24
+  },
+  jab: {
+    'hip.y': -0.09, 'hip.ry': -14, 'hip.rx': 6, 'spine.ry': 14, 'spine.rx': 10, 'head.rx': 8, 'head.ry': 8,
+    'armA.sx': 88, 'armA.sz': 2, 'armA.e': 4, 'armA.pr': 80, 'armA.w': 0,
+    'armB.sx': 42, 'armB.sz': 12, 'armB.e': 130, 'armB.pr': 10,
+    'legA.hx': 30, 'legA.hz': 12, 'legA.k': 36, 'legA.a': -4,
+    'legB.hx': -16, 'legB.hz': 16, 'legB.k': 18, 'legB.a': -22, 'legB.t': 28
+  },
+  cross: {
+    'hip.y': -0.08, 'hip.ry': 14, 'hip.rx': 6, 'spine.ry': 12, 'spine.rx': 12, 'head.rx': 8, 'head.ry': -10,
+    'armA.sx': 52, 'armA.sz': 8, 'armA.e': 118, 'armA.pr': -10,
+    'armB.sx': 88, 'armB.sz': 4, 'armB.e': 4, 'armB.pr': 80,
+    'legA.hx': 26, 'legA.hz': 12, 'legA.k': 30, 'legA.a': -4,
+    'legB.hx': -10, 'legB.hz': 14, 'legB.k': 10, 'legB.a': -34, 'legB.t': 36
+  },
+  kick: {
+    'hip.rx': -10, 'hip.ry': -20, 'spine.rx': -6, 'head.rx': 8, 'head.ry': 14,
+    'armA.sx': 30, 'armA.sz': 38, 'armA.e': 50, 'armB.sx': 48, 'armB.sz': 20, 'armB.e': 95,
+    'legA.hx': 96, 'legA.hz': 4, 'legA.k': 12, 'legA.a': -34, 'legA.t': 40,
+    'legB.hx': 0, 'legB.hz': 6, 'legB.k': 16, 'legB.a': 0
+  },
+  roundhouse: {
+    'hip.ry': -48, 'hip.rz': 8, 'spine.rz': -16, 'spine.ry': 30, 'head.ry': 38, 'head.rx': 6,
+    'armA.sx': 25, 'armA.sz': 70, 'armA.e': 40, 'armB.sx': 60, 'armB.sz': 30, 'armB.e': 100,
+    'legA.hx': 62, 'legA.hz': 84, 'legA.k': 20, 'legA.a': -30, 'legA.t': 30,
+    'legB.hx': 0, 'legB.hz': 6, 'legB.k': 28, 'legB.hy': -20
+  },
+  crouch: {
+    'hip.y': -0.34, 'hip.rx': 22, 'spine.rx': 18, 'head.rx': -10,
+    'armA.sx': 38, 'armA.sz': 18, 'armA.e': 70, 'armB.sx': 38, 'armB.sz': 18, 'armB.e': 70,
+    'legA.hx': 100, 'legA.hz': 14, 'legA.k': 125, 'legA.a': 18, 'legB.hx': 100, 'legB.hz': 14, 'legB.k': 125, 'legB.a': 18
+  },
+  block: {
+    'hip.y': -0.1, 'hip.rx': 6, 'hip.ry': -22, 'spine.rx': 16, 'spine.ry': 6, 'neck.rx': 6, 'head.rx': 18, 'head.ry': 10,
+    'armA.sx': 112, 'armA.sz': -10, 'armA.e': 146, 'armA.pr': 50, 'armB.sx': 106, 'armB.sz': -6, 'armB.e': 148, 'armB.pr': -50,
+    'legA.hx': 22, 'legA.hz': 14, 'legA.k': 38, 'legB.hx': -12, 'legB.hz': 16, 'legB.k': 36, 'legB.a': -14, 'legB.t': 16
+  },
+  grab: {
+    'hip.y': -0.10, 'hip.rx': 6, 'spine.rx': 20, 'head.rx': 12,
+    'armA.sx': 72, 'armA.sz': 16, 'armA.e': 62, 'armA.pr': 30, 'armB.sx': 72, 'armB.sz': 16, 'armB.e': 62, 'armB.pr': -30,
+    'legA.hx': 28, 'legA.hz': 16, 'legA.k': 32, 'legB.hx': 22, 'legB.hz': 16, 'legB.k': 30
+  },
+  ride: {
+    'hip.y': -0.10, 'hip.rx': 20, 'spine.rx': 26, 'head.rx': -34,
+    'armA.sx': 95, 'armA.sz': 14, 'armA.e': 18, 'armB.sx': 95, 'armB.sz': 14, 'armB.e': 18,
+    'legA.hx': 62, 'legA.hz': 8, 'legA.k': 84, 'legA.a': 10, 'legB.hx': 62, 'legB.hz': 8, 'legB.k': 84, 'legB.a': 10
+  },
+  hurricane: {
+    'hip.y': -0.05, 'hip.rx': 5, 'spine.rx': 8, 'head.rx': 6,
+    'armA.sx': 8, 'armA.sz': 88, 'armA.e': 18, 'armA.pr': 40, 'armB.sx': 8, 'armB.sz': 88, 'armB.e': 18, 'armB.pr': -40,
+    'legA.hx': 16, 'legA.hz': 24, 'legA.k': 36, 'legA.a': 4, 'legB.hx': -12, 'legB.hz': 24, 'legB.k': 36, 'legB.a': 4
+  },
+  hurt: {
+    'hip.rx': -8, 'hip.ry': 10, 'spine.rx': -22, 'spine.rz': 8, 'neck.rx': -12, 'head.rx': -18, 'head.rz': -10,
+    'armA.sx': -26, 'armA.sz': 44, 'armA.e': 36, 'armB.sx': 12, 'armB.sz': 58, 'armB.e': 48,
+    'legA.hx': 8, 'legA.hz': 8, 'legA.k': 30, 'legB.hx': -12, 'legB.hz': 12, 'legB.k': 22
+  },
+  down: {
+    'hip.rx': -90, 'hip.y': 0, 'spine.rx': -6, 'head.rx': 22, 'neck.rx': 8,
+    'armA.sx': -6, 'armA.sz': 28, 'armA.e': 14, 'armB.sx': -6, 'armB.sz': 28, 'armB.e': 14,
+    'legA.hx': 6, 'legA.hz': 10, 'legA.k': 8, 'legB.hx': 4, 'legB.hz': 12, 'legB.k': 6
+  }
+};
+
+var POSE_LABELS = [
+  ['stand', 'Stand'], ['guard', 'Guard'], ['jab', 'Jab'], ['cross', 'Cross'], ['kick', 'Front kick'], ['roundhouse', 'Roundhouse'],
+  ['crouch', 'Crouch'], ['block', 'Block'], ['grab', 'Grab'], ['hurricane', 'Hurricane'], ['hurt', 'Hurt'], ['down', 'Knocked down'], ['ride', 'Bike ride']
+];
+
+/* time-based previews until the tick-based move clips arrive in the next phase */
+var SEQUENCES = {
+  combo: { loop: true, steps: [['guard', 0.3, 0.2], ['jab', 0.10, 0.08], ['guard', 0.10, 0.10], ['cross', 0.12, 0.10], ['guard', 0.14, 0.12],
+                              ['kick', 0.25, 0.22], ['guard', 0.18, 0.2], ['roundhouse', 0.25, 0.26], ['guard', 0.3, 0.3]] },
+  counter: { loop: true, steps: [['guard', 0.5, 0.3], ['block', 0.5, 0.12], ['grab', 0.4, 0.2], ['jab', 0.3, 0.2], ['hurt', 0.5, 0.3]] }
+};
+
+module.exports = { JOINTS: JOINTS, POSES: POSES, POSE_LABELS: POSE_LABELS, SEQUENCES: SEQUENCES, STAND: STAND };
+
+};
+defs["data/moves"]=function(module,exports,require){
+/* data layer: move clips. Each move is a short list of key poses (anticipation, strike, follow-through, recovery).
+   A key pose only lists the joints that differ from the guard stance; everything else stays in guard.
+   Times are seconds from the start of the move. `ease` shapes the approach to that key:
+   'in' slow start (winding up), 'snap' explosive start that settles (strikes), 'io' smooth.
+   hit = impact time, cancel = time after which the next press may chain, len = total time.
+   Conventions as in poses.js: A = lead side, B = rear side; hip.ry negative = bladed stance, positive turns the rear side forward. */
+'use strict';
+
+var GUARD = {
+  'hip.y': -0.07, 'hip.ry': -30, 'hip.rx': 3, 'spine.ry': 10, 'spine.rx': 8, 'neck.rx': -3, 'head.rx': 10, 'head.ry': 20,
+  'armA.sx': 44, 'armA.sz': 10, 'armA.e': 96, 'armA.pr': -10,
+  'armB.sx': 34, 'armB.sz': 12, 'armB.e': 112, 'armB.pr': 10,
+  'legA.hx': 24, 'legA.hz': 12, 'legA.k': 22, 'legA.a': -4,
+  'legB.hx': -14, 'legB.hz': 16, 'legB.k': 22, 'legB.a': -18, 'legB.t': 24
+};
+
+var MOVES = {
+  /* lead straight: snaps out from the shoulder, rear hand stays glued to the chin */
+  jab: { hit: 0.11, cancel: 0.2, len: 0.34, damage: 1, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.06, ease: 'in', pose: { 'hip.ry': -36, 'spine.ry': 4, 'spine.rx': 10, 'armA.sx': 40, 'armA.sz': 12, 'armA.e': 112, 'armA.pr': 0, 'armB.sx': 38, 'armB.e': 116, 'legA.k': 26, 'legA.hx': 22 } },
+    { t: 0.11, ease: 'snap', pose: { 'hip.ry': -20, 'spine.ry': 24, 'spine.rx': 12, 'head.ry': 14, 'armA.sx': 90, 'armA.sz': 2, 'armA.e': 5, 'armA.pr': 80, 'armB.sx': 42, 'armB.e': 122, 'legA.k': 36, 'legA.hx': 32 } },
+    { t: 0.17, pose: { 'hip.ry': -20, 'spine.ry': 24, 'spine.rx': 12, 'head.ry': 14, 'armA.sx': 92, 'armA.sz': 2, 'armA.e': 8, 'armA.pr': 80, 'armB.sx': 42, 'armB.e': 122, 'legA.k': 36, 'legA.hx': 32 } },
+    { t: 0.34, ease: 'io', pose: {} }
+  ] },
+  /* rear cross: load the back leg, drive the hip round, arm sweeps up and out from the shoulder before it lands */
+  cross: { hit: 0.15, cancel: 0.26, len: 0.42, damage: 1.4, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.09, ease: 'in', pose: { 'hip.ry': -44, 'spine.ry': -2, 'spine.rx': 12, 'hip.y': -0.11, 'armB.sx': 30, 'armB.sz': 30, 'armB.e': 118, 'armB.pr': -20, 'armA.sx': 62, 'armA.e': 128, 'legB.k': 36, 'legB.hx': -16, 'legA.k': 26 } },
+    { t: 0.12, ease: 'snap', pose: { 'hip.ry': -6, 'spine.ry': 22, 'spine.rx': 12, 'hip.y': -0.09, 'armB.sx': 66, 'armB.sz': 16, 'armB.e': 62, 'armB.pr': 30, 'armA.sx': 62, 'armA.e': 130, 'legB.k': 20, 'legB.hx': -10, 'legB.t': 36, 'legA.k': 30 } },
+    { t: 0.16, ease: 'snap', pose: { 'hip.ry': 18, 'spine.ry': 20, 'spine.rx': 14, 'head.ry': -6, 'hip.y': -0.08, 'armB.sx': 90, 'armB.sz': 3, 'armB.e': 4, 'armB.pr': 80, 'armA.sx': 60, 'armA.e': 132, 'legB.k': 8, 'legB.hx': -6, 'legB.a': -34, 'legB.t': 38, 'legA.k': 30, 'legA.hx': 28 } },
+    { t: 0.24, pose: { 'hip.ry': 18, 'spine.ry': 20, 'spine.rx': 14, 'head.ry': -6, 'hip.y': -0.08, 'armB.sx': 92, 'armB.sz': 3, 'armB.e': 8, 'armB.pr': 80, 'armA.sx': 60, 'armA.e': 132, 'legB.k': 8, 'legB.hx': -6, 'legB.a': -34, 'legB.t': 38, 'legA.k': 30, 'legA.hx': 28 } },
+    { t: 0.42, ease: 'io', pose: {} }
+  ] },
+  /* lead hook: the arm travels in a flat horizontal arc from out wide to across the body */
+  hook: { hit: 0.16, cancel: 0.28, len: 0.44, damage: 1.6, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.10, ease: 'in', pose: { 'hip.ry': -52, 'spine.ry': -10, 'spine.rz': 4, 'hip.y': -0.12, 'armA.sx': 62, 'armA.sz': 66, 'armA.e': 96, 'armA.pr': 40, 'armB.sx': 50, 'armB.e': 138, 'legA.k': 34, 'legA.hx': 20 } },
+    { t: 0.17, ease: 'snap', pose: { 'hip.ry': 6, 'spine.ry': 38, 'spine.rz': -4, 'head.ry': 4, 'hip.y': -0.1, 'armA.sx': 84, 'armA.sz': 12, 'armA.e': 86, 'armA.pr': 90, 'armB.sx': 50, 'armB.e': 138, 'legA.k': 38, 'legA.hx': 28, 'legB.t': 36 } },
+    { t: 0.26, pose: { 'hip.ry': 6, 'spine.ry': 38, 'spine.rz': -4, 'head.ry': 4, 'hip.y': -0.1, 'armA.sx': 84, 'armA.sz': 8, 'armA.e': 90, 'armA.pr': 90, 'armB.sx': 50, 'armB.e': 138, 'legA.k': 38, 'legA.hx': 28, 'legB.t': 36 } },
+    { t: 0.44, ease: 'io', pose: {} }
+  ] },
+  /* rear elbow: close range, arm folded tight, whole torso turns into it */
+  elbow: { hit: 0.14, cancel: 0.26, len: 0.4, damage: 1.5, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.08, ease: 'in', pose: { 'hip.ry': -44, 'spine.ry': -8, 'hip.y': -0.12, 'armB.sx': 78, 'armB.sz': 64, 'armB.e': 148, 'armB.pr': 20, 'armA.sx': 70, 'armA.sz': 14, 'armA.e': 110, 'legA.k': 36, 'legB.k': 30 } },
+    { t: 0.14, ease: 'snap', pose: { 'hip.ry': 28, 'spine.ry': 34, 'spine.rx': 14, 'head.ry': -12, 'hip.y': -0.1, 'armB.sx': 52, 'armB.sz': 6, 'armB.e': 146, 'armB.pr': -20, 'armA.sx': 70, 'armA.sz': 14, 'armA.e': 110, 'legB.k': 14, 'legB.t': 40, 'legA.k': 34 } },
+    { t: 0.24, pose: { 'hip.ry': 28, 'spine.ry': 34, 'spine.rx': 14, 'head.ry': -12, 'hip.y': -0.1, 'armB.sx': 52, 'armB.sz': 6, 'armB.e': 146, 'armB.pr': -20, 'armA.sx': 70, 'armA.sz': 14, 'armA.e': 110, 'legB.k': 14, 'legB.t': 40, 'legA.k': 34 } },
+    { t: 0.40, ease: 'io', pose: {} }
+  ] },
+  /* rear knee: both hands pull the head down onto the rising knee */
+  knee: { hit: 0.17, cancel: 0.3, len: 0.46, damage: 1.7, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.09, ease: 'in', pose: { 'hip.ry': -8, 'hip.rx': 0, 'spine.rx': 4, 'hip.y': -0.12, 'armA.sx': 76, 'armA.sz': 18, 'armA.e': 82, 'armB.sx': 46, 'armB.sz': 12, 'armB.e': 136, 'legA.k': 30, 'legA.hx': 14, 'legB.hx': -22, 'legB.k': 40 } },
+    { t: 0.17, ease: 'snap', pose: { 'hip.y': -0.02, 'hip.ry': 6, 'hip.rx': 12, 'spine.rx': 26, 'head.rx': 14, 'armA.sx': 66, 'armA.sz': 14, 'armA.e': 84, 'armB.sx': 46, 'armB.sz': 12, 'armB.e': 138, 'legA.hx': 2, 'legA.k': 8, 'legA.hz': 6, 'legB.hx': 104, 'legB.k': 112, 'legB.hz': 4, 'legB.a': 16, 'legB.t': 20 } },
+    { t: 0.28, pose: { 'hip.y': -0.02, 'hip.ry': 6, 'hip.rx': 12, 'spine.rx': 26, 'head.rx': 14, 'armA.sx': 66, 'armA.sz': 14, 'armA.e': 84, 'armB.sx': 46, 'armB.sz': 12, 'armB.e': 138, 'legA.hx': 2, 'legA.k': 8, 'legA.hz': 6, 'legB.hx': 100, 'legB.k': 110, 'legB.hz': 4, 'legB.a': 16, 'legB.t': 20 } },
+    { t: 0.46, ease: 'io', pose: {} }
+  ] },
+  /* lead push kick: knee chambers, then the heel drives straight out */
+  kick: { hit: 0.2, cancel: 0.34, len: 0.52, damage: 1.8, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.12, ease: 'in', pose: { 'hip.ry': -22, 'spine.rx': -2, 'spine.ry': 6, 'hip.y': -0.06, 'armA.sx': 36, 'armA.sz': 36, 'armA.e': 70, 'armB.sx': 54, 'armB.sz': 22, 'armB.e': 100, 'legA.hx': 92, 'legA.k': 108, 'legA.a': 8, 'legB.hx': -2, 'legB.k': 24, 'legB.a': 0, 'legB.t': 0 } },
+    { t: 0.2, ease: 'snap', pose: { 'hip.ry': -14, 'hip.rx': -6, 'spine.rx': -8, 'spine.ry': 10, 'hip.y': -0.05, 'armA.sx': 30, 'armA.sz': 40, 'armA.e': 60, 'armB.sx': 54, 'armB.sz': 24, 'armB.e': 96, 'legA.hx': 96, 'legA.k': 8, 'legA.a': -34, 'legA.t': 40, 'legB.hx': 0, 'legB.k': 20, 'legB.a': 0, 'legB.t': 0 } },
+    { t: 0.32, pose: { 'hip.ry': -14, 'hip.rx': -6, 'spine.rx': -8, 'spine.ry': 10, 'hip.y': -0.05, 'armA.sx': 30, 'armA.sz': 40, 'armA.e': 60, 'armB.sx': 54, 'armB.sz': 24, 'armB.e': 96, 'legA.hx': 94, 'legA.k': 10, 'legA.a': -30, 'legA.t': 40, 'legB.hx': 0, 'legB.k': 20, 'legB.a': 0, 'legB.t': 0 } },
+    { t: 0.52, ease: 'io', pose: {} }
+  ] },
+  /* rear roundhouse: pivot on the lead foot, hips whip the leg round in an arc, head stays level */
+  roundhouse: { hit: 0.26, cancel: 0.44, len: 0.7, damage: 2.2, keys: [
+    { t: 0.00, pose: {} },
+    { t: 0.14, ease: 'in', pose: { 'hip.ry': -50, 'spine.ry': -6, 'spine.rx': 4, 'hip.y': -0.1, 'armA.sx': 58, 'armA.sz': 14, 'armA.e': 112, 'armB.sx': 40, 'armB.sz': 20, 'armB.e': 120, 'legA.hx': 14, 'legA.k': 30, 'legA.hy': -14, 'legB.hx': 56, 'legB.hz': 46, 'legB.k': 118, 'legB.a': 10 } },
+    { t: 0.26, ease: 'snap', pose: { 'hip.ry': 40, 'hip.rz': 8, 'spine.ry': -22, 'spine.rz': 12, 'head.ry': -40, 'hip.y': -0.05, 'armA.sx': 52, 'armA.sz': 22, 'armA.e': 108, 'armB.sx': 24, 'armB.sz': 34, 'armB.e': 80, 'legA.hx': 6, 'legA.k': 14, 'legA.hy': -32, 'legB.hx': 70, 'legB.hz': 84, 'legB.k': 14, 'legB.a': -34, 'legB.t': 30 } },
+    { t: 0.38, pose: { 'hip.ry': 46, 'hip.rz': 8, 'spine.ry': -22, 'spine.rz': 12, 'head.ry': -40, 'hip.y': -0.05, 'armA.sx': 52, 'armA.sz': 22, 'armA.e': 108, 'armB.sx': 24, 'armB.sz': 34, 'armB.e': 80, 'legA.hx': 6, 'legA.k': 14, 'legA.hy': -34, 'legB.hx': 62, 'legB.hz': 80, 'legB.k': 24, 'legB.a': -30, 'legB.t': 30 } },
+    { t: 0.7, ease: 'io', pose: {} }
+  ] }
+};
+
+/* ---- face-work moves for the two string sequences ---- */
+/* rear hook: the right hand sweeps in from out wide, right to left across the face */
+MOVES.hookB = { hit: 0.17, cancel: 0.28, len: 0.44, damage: 1.7, keys: [
+  { t: 0.00, pose: {} },
+  { t: 0.10, ease: 'in', pose: { 'hip.ry': -58, 'spine.ry': -14, 'spine.rz': -4, 'hip.y': -0.12, 'armB.sx': 62, 'armB.sz': 66, 'armB.e': 96, 'armB.pr': 40, 'armA.sx': 52, 'armA.sz': 14, 'armA.e': 124, 'legB.k': 34, 'legB.hx': -16, 'legA.k': 28 } },
+  { t: 0.17, ease: 'snap', pose: { 'hip.ry': 22, 'spine.ry': 40, 'spine.rz': 4, 'head.ry': -8, 'hip.y': -0.1, 'armB.sx': 84, 'armB.sz': 12, 'armB.e': 86, 'armB.pr': 90, 'armA.sx': 52, 'armA.sz': 14, 'armA.e': 124, 'legB.k': 20, 'legB.hx': -8, 'legB.t': 36, 'legA.k': 34, 'legA.hx': 28 } },
+  { t: 0.26, pose: { 'hip.ry': 24, 'spine.ry': 40, 'spine.rz': 4, 'head.ry': -8, 'hip.y': -0.1, 'armB.sx': 84, 'armB.sz': 8, 'armB.e': 90, 'armB.pr': 90, 'armA.sx': 52, 'armA.sz': 14, 'armA.e': 124, 'legB.k': 20, 'legB.hx': -8, 'legB.t': 36, 'legA.k': 34, 'legA.hx': 28 } },
+  { t: 0.44, ease: 'io', pose: {} }
+] };
+/* axe kick: the rear leg swings up straight, then the heel chops down onto the head from above */
+MOVES.axeKick = { hit: 0.33, cancel: 0.5, len: 0.74, damage: 2.2, keys: [
+  { t: 0.00, pose: {} },
+  { t: 0.15, ease: 'in', pose: { 'hip.ry': -26, 'spine.rx': 0, 'hip.y': -0.05, 'armA.sx': 60, 'armA.sz': 24, 'armA.e': 100, 'armB.sx': 40, 'armB.sz': 30, 'armB.e': 104, 'legA.hx': 8, 'legA.k': 14, 'legB.hx': 96, 'legB.k': 74, 'legB.a': 8 } },
+  { t: 0.28, ease: 'io', pose: { 'hip.ry': -20, 'hip.rx': -8, 'spine.rx': -14, 'hip.y': -0.02, 'armA.sx': 50, 'armA.sz': 44, 'armA.e': 90, 'armB.sx': 30, 'armB.sz': 48, 'armB.e': 90, 'legA.hx': 4, 'legA.k': 8, 'legB.hx': 122, 'legB.k': 6, 'legB.a': 12 } },
+  { t: 0.38, ease: 'snap', pose: { 'hip.ry': -16, 'hip.rx': 8, 'spine.rx': 20, 'head.rx': 12, 'hip.y': -0.06, 'armA.sx': 56, 'armA.sz': 36, 'armA.e': 96, 'armB.sx': 36, 'armB.sz': 40, 'armB.e': 96, 'legA.hx': 8, 'legA.k': 20, 'legB.hx': 28, 'legB.k': 6, 'legB.a': 22 } },
+  { t: 0.5, pose: { 'hip.ry': -16, 'hip.rx': 8, 'spine.rx': 20, 'head.rx': 12, 'hip.y': -0.07, 'armA.sx': 56, 'armA.sz': 36, 'armA.e': 96, 'armB.sx': 36, 'armB.sz': 40, 'armB.e': 96, 'legA.hx': 8, 'legA.k': 24, 'legB.hx': 24, 'legB.k': 8, 'legB.a': 22 } },
+  { t: 0.74, ease: 'io', pose: {} }
+] };
+/* uppercut: sink low, then drive up through the legs and hip so the fist rises under the chin */
+MOVES.uppercut = { hit: 0.2, cancel: 0.32, len: 0.5, damage: 2.0, keys: [
+  { t: 0.00, pose: {} },
+  { t: 0.11, ease: 'in', pose: { 'hip.ry': -50, 'hip.y': -0.22, 'spine.rx': 16, 'spine.ry': -12, 'armB.sx': 8, 'armB.sz': 18, 'armB.e': 100, 'armB.pr': -20, 'armA.sx': 60, 'armA.sz': 12, 'armA.e': 122, 'legB.k': 46, 'legB.hx': -18, 'legA.k': 40, 'legA.hx': 24 } },
+  { t: 0.2, ease: 'snap', pose: { 'hip.ry': 14, 'hip.y': 0, 'hip.rx': -2, 'spine.rx': -6, 'spine.ry': 22, 'head.rx': -6, 'armB.sx': 62, 'armB.sz': 8, 'armB.e': 92, 'armB.pr': 10, 'armA.sx': 60, 'armA.sz': 12, 'armA.e': 124, 'legB.k': 6, 'legB.hx': -6, 'legB.t': 38, 'legA.k': 18, 'legA.hx': 20 } },
+  { t: 0.3, pose: { 'hip.ry': 16, 'hip.y': 0, 'hip.rx': -2, 'spine.rx': -6, 'spine.ry': 22, 'head.rx': -6, 'armB.sx': 70, 'armB.sz': 8, 'armB.e': 96, 'armB.pr': 10, 'armA.sx': 60, 'armA.sz': 12, 'armA.e': 124, 'legB.k': 6, 'legB.hx': -6, 'legB.t': 38, 'legA.k': 18, 'legA.hx': 20 } },
+  { t: 0.5, ease: 'io', pose: {} }
+] };
+
+/* the block counter: a quick cross straight through the enemy's guard - a small reward, not a special */
+MOVES.counterCross = JSON.parse(JSON.stringify(MOVES.cross)); MOVES.counterCross.damage = 2.2;
+
+/* ---- guitar counters. gtr.on 0 = on the back, 1 = held in front (spine space, voxel units, YXZ degrees); gtr.px/py/pz is where the neck grip sits,
+   gtr.gy how far up the neck that grip is, gtr.ya / gtr.yb where the lead and rear hands hold the guitar. Hands follow it with arm IK. ---- */
+var STANCE = { 'hip.y': -0.13, 'hip.ry': -40, 'hip.rx': 4, 'spine.rx': 8, 'legA.hx': 26, 'legA.hz': 18, 'legA.k': 38, 'legB.hx': -16, 'legB.hz': 20, 'legB.k': 38, 'legB.a': -14 };
+function X(a, b) { var o = {}, k; for (k in a) o[k] = a[k]; for (k in b) o[k] = b[k]; return o; }
+var HELD = { 'gtr.on': 1, 'gtr.gy': 14, 'gtr.ya': 14, 'gtr.yb': -2, 'gtr.px': 10, 'gtr.py': 8, 'gtr.pz': 14, 'gtr.rx': 0, 'gtr.ry': -23, 'gtr.rz': -90 };
+var BAT = { 'gtr.on': 1, 'gtr.gy': 18, 'gtr.ya': 17, 'gtr.yb': 21, 'gtr.rx': 0, 'gtr.ry': 0, 'gtr.rz': 0 };
+
+MOVES.counterBoom = { counter: true, tempo: 1.25, cam: [
+  { t: 0.0, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 }, { t: 0.55, dist: 3.4, h: 1.5, look: 1.35, fov: 38, rel: 0.5 },
+  { t: 0.98, dist: 2.4, h: 1.3, look: 1.3, fov: 30, rel: 0.3 }, { t: 1.12, dist: 9.0, h: 3.2, look: 1.2, fov: 62, rel: 0.6 }, { t: 1.95, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 } ], hit: 1.0, hits: [1.0], cancel: 1.45, len: 1.95, fx: [{ t: 1.0, kind: 'boom' }], damage: 3, keys: [
+  { t: 0.00, pose: { 'gtr.on': 0 } },
+  { t: 0.32, ease: 'in', pose: X(STANCE, { 'gtr.on': 0.5, 'gtr.gy': 14, 'gtr.ya': 14, 'gtr.yb': -2, 'gtr.px': 6, 'gtr.py': 16, 'gtr.pz': 4, 'gtr.rx': 0, 'gtr.ry': -10, 'gtr.rz': -60, 'armA.sx': 40, 'armB.sx': 60 }) },
+  { t: 0.62, ease: 'io', pose: X(STANCE, HELD) },
+  { t: 0.88, ease: 'in', pose: X(STANCE, X(HELD, { 'hip.y': -0.16, 'spine.rx': -10, 'spine.ry': -24, 'head.rx': -8, 'gtr.px': 6, 'gtr.py': 14, 'gtr.pz': 7, 'gtr.ry': 8, 'gtr.rz': -78, 'gtr.rx': -8 })) },
+  { t: 1.0, ease: 'snap', pose: X(STANCE, X(HELD, { 'hip.y': -0.2, 'hip.ry': -12, 'spine.rx': 26, 'spine.ry': 18, 'head.rx': 14, 'legA.hx': 34, 'legA.k': 46, 'gtr.px': 12, 'gtr.py': 6, 'gtr.pz': 22, 'gtr.ry': -52, 'gtr.rz': -94, 'gtr.rx': 18 })) },
+  { t: 1.45, pose: X(STANCE, X(HELD, { 'hip.y': -0.19, 'hip.ry': -12, 'spine.rx': 24, 'spine.ry': 16, 'head.rx': 12, 'legA.hx': 34, 'legA.k': 46, 'gtr.px': 12, 'gtr.py': 6, 'gtr.pz': 20, 'gtr.ry': -52, 'gtr.rz': -94, 'gtr.rx': 18 })) },
+  { t: 1.95, ease: 'io', pose: { 'gtr.on': 0 } }
+] };
+
+MOVES.counterSmash = { counter: true, tempo: 1.2, cam: [
+  { t: 0.0, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 }, { t: 0.4, dist: 4.4, h: 2.3, look: 1.4, fov: 42, rel: 2.7 },
+  { t: 1.4, dist: 3.8, h: 1.8, look: 1.2, fov: 38, rel: 3.5 }, { t: 2.1, dist: 3.4, h: 1.6, look: 1.0, fov: 36, rel: 0.5 }, { t: 2.9, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 } ], hit: 0.62, hits: [0.62, 1.35, 2.05], cancel: 2.3, len: 2.9, damage: 5, keys: [
+  { t: 0.00, pose: { 'gtr.on': 0 } },
+  { t: 0.34, ease: 'in', pose: X(STANCE, X(BAT, { 'gtr.px': 0, 'gtr.py': 34, 'gtr.pz': 6, 'gtr.rx': 135, 'spine.rx': -12, 'hip.y': -0.1, 'armA.sx': 100, 'armB.sx': 100 })) },
+  { t: 0.62, ease: 'snap', pose: X(STANCE, X(BAT, { 'gtr.px': 0, 'gtr.py': 12, 'gtr.pz': 9, 'gtr.rx': -60, 'spine.rx': 30, 'hip.rx': 8, 'hip.y': -0.17, 'head.rx': 14, 'legA.hx': 36, 'legA.k': 48 })) },
+  { t: 0.85, pose: X(STANCE, X(BAT, { 'gtr.px': 0, 'gtr.py': 12, 'gtr.pz': 9, 'gtr.rx': -60, 'spine.rx': 30, 'hip.rx': 8, 'hip.y': -0.17, 'head.rx': 14, 'legA.hx': 36, 'legA.k': 48 })) },
+  { t: 1.12, ease: 'in', pose: X(STANCE, X(BAT, { 'gtr.px': 3, 'gtr.py': 16, 'gtr.pz': 8, 'gtr.rz': -90, 'gtr.ry': -45, 'gtr.rx': 0, 'spine.ry': -42, 'hip.ry': -62, 'hip.y': -0.15 })) },
+  { t: 1.35, ease: 'snap', pose: X(STANCE, X(BAT, { 'gtr.px': 3, 'gtr.py': 16, 'gtr.pz': 8, 'gtr.rz': -90, 'gtr.ry': 156, 'gtr.rx': 0, 'spine.ry': 46, 'hip.ry': 18, 'hip.y': -0.15 })) },
+  { t: 1.55, pose: X(STANCE, X(BAT, { 'gtr.px': 3, 'gtr.py': 16, 'gtr.pz': 8, 'gtr.rz': -90, 'gtr.ry': 160, 'gtr.rx': 0, 'spine.ry': 44, 'hip.ry': 16, 'hip.y': -0.15 })) },
+  { t: 1.82, ease: 'in', pose: X(STANCE, X(BAT, { 'gtr.px': 0, 'gtr.py': 34, 'gtr.pz': 6, 'gtr.rx': 135, 'spine.rx': -14, 'hip.y': -0.1, 'armA.sx': 100 })) },
+  { t: 2.05, ease: 'snap', pose: X(STANCE, X(BAT, { 'gtr.px': 0, 'gtr.py': 11, 'gtr.pz': 10, 'gtr.rx': -62, 'spine.rx': 34, 'hip.rx': 10, 'hip.y': -0.19, 'head.rx': 16, 'legA.hx': 42, 'legA.k': 54 })) },
+  { t: 2.25, pose: X(STANCE, X(BAT, { 'gtr.px': 0, 'gtr.py': 11, 'gtr.pz': 10, 'gtr.rx': -62, 'spine.rx': 34, 'hip.rx': 10, 'hip.y': -0.19, 'head.rx': 16, 'legA.hx': 42, 'legA.k': 54 })) },
+  { t: 2.9, ease: 'io', pose: { 'gtr.on': 0 } }
+] };
+
+MOVES.counterWhirl = { counter: true, tempo: 1.2, cam: [
+  { t: 0.0, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 }, { t: 0.5, dist: 3.2, h: 1.3, look: 1.4, fov: 36, rel: 0.4 },
+  { t: 0.7, dist: 5.2, h: 2.6, look: 1.2, fov: 52, rel: 0.4 }, { t: 1.75, dist: 5.6, h: 2.8, look: 1.2, fov: 54, rel: 0.4 + 6.28 }, { t: 2.4, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 + 6.28 } ], hit: 0.9, hits: [0.85, 1.05, 1.25, 1.45], cancel: 2.0, len: 2.4, damage: 4, keys: [
+  { t: 0.00, pose: { 'gtr.on': 0 } },
+  { t: 0.42, ease: 'io', pose: X(STANCE, { 'gtr.on': 1, 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 6, 'gtr.py': 18, 'gtr.pz': 14, 'gtr.rx': 8, 'gtr.ry': 180, 'gtr.rz': -90, 'hip.y': -0.14, 'hip.ry': -30 }) },
+  { t: 0.62, ease: 'in', pose: X(STANCE, { 'gtr.on': 1, 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 6, 'gtr.py': 18, 'gtr.pz': 14, 'gtr.rx': 8, 'gtr.ry': 180, 'gtr.rz': -90, 'hip.y': -0.14, 'hip.ry': -70, 'spine.ry': -12 }) },
+  { t: 1.75, ease: 'io', pose: X(STANCE, { 'gtr.on': 1, 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 6, 'gtr.py': 18, 'gtr.pz': 14, 'gtr.rx': 8, 'gtr.ry': 180, 'gtr.rz': -90, 'hip.y': -0.12, 'hip.ry': 650, 'spine.ry': 0 }) },
+  { t: 2.4, ease: 'io', pose: { 'gtr.on': 0, 'hip.ry': 690 } }
+] };
+
+
+/* ---- the rage finisher: Toofan rips the guitar off his back, coils, and spins three full turns like a rotor, then drives it into the ground ---- */
+var COIL = { 'gtr.on': 1, 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 4, 'gtr.py': 18, 'gtr.pz': 12, 'gtr.rx': 8, 'gtr.ry': 0, 'gtr.rz': -90 };
+var ROTOR = { 'gtr.on': 1, 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 6, 'gtr.py': 18, 'gtr.pz': 14, 'gtr.rx': 8, 'gtr.ry': 180, 'gtr.rz': -90 };
+MOVES.finisherWhirl = { counter: true, finisher: true, tempo: 1, hit: 1.9, hits: [1.9, 2.2, 2.5, 2.8, 3.1, 3.4], cancel: 4.6, len: 5.2, damage: 9,
+  fx: [{ t: 1.5, kind: 'whirl' }, { t: 1.75, kind: 'whirl' }, { t: 2.0, kind: 'whirl' }, { t: 2.25, kind: 'whirl' }, { t: 2.5, kind: 'whirl' }, { t: 2.75, kind: 'whirl' }, { t: 3.0, kind: 'whirl' }, { t: 3.4, kind: 'slam' }],
+  cam: [
+    { t: 0.0, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 },
+    { t: 0.6, dist: 3.8, h: 0.9, look: 1.5, fov: 42, rel: 0.5 },         /* low heroic shot as the guitar comes off his back */
+    { t: 1.35, dist: 2.5, h: 1.45, look: 1.45, fov: 32, rel: 0.25 },     /* slow push-in on his face while he coils */
+    { t: 1.9, dist: 6.4, h: 3.4, look: 1.2, fov: 52, rel: 1.8 },         /* whip out and up as the spin begins */
+    { t: 3.0, dist: 8.8, h: 4.4, look: 1.2, fov: 60, rel: 1.8 + 6.1 },   /* wide orbit round the cyclone */
+    { t: 3.4, dist: 4.4, h: 1.5, look: 0.9, fov: 34, rel: 0.7 + 6.28 },  /* snap in on the slam */
+    { t: 4.3, dist: 4.8, h: 1.8, look: 1.0, fov: 38, rel: 0.7 + 6.28 },
+    { t: 5.2, dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 + 6.28 }
+  ],
+  keys: [
+  { t: 0.00, pose: { 'gtr.on': 0 } },
+  { t: 0.55, ease: 'io', pose: X(STANCE, { 'gtr.on': 1, 'gtr.gy': 14, 'gtr.ya': 15, 'gtr.yb': 19, 'gtr.px': 0, 'gtr.py': 32, 'gtr.pz': 4, 'gtr.rx': 180, 'gtr.ry': 0, 'gtr.rz': 0, 'spine.rx': -12, 'head.rx': -12, 'hip.y': -0.13 }) },
+  { t: 0.95, ease: 'io', pose: X(STANCE, X(COIL, { 'hip.y': -0.24, 'hip.ry': -75, 'spine.ry': -48, 'spine.rx': 14, 'legA.k': 60, 'legB.k': 58, 'legA.hz': 24, 'legB.hz': 26, 'head.rx': 8 })) },
+  { t: 1.45, ease: 'io', pose: X(STANCE, X(COIL, { 'hip.y': -0.26, 'hip.ry': -80, 'spine.ry': -52, 'spine.rx': 16, 'legA.k': 66, 'legB.k': 62, 'legA.hz': 26, 'legB.hz': 28, 'head.rx': 8 })) },
+  { t: 1.85, ease: 'in', pose: X(STANCE, X(ROTOR, { 'hip.y': -0.2, 'hip.ry': 40, 'spine.ry': 0, 'spine.rx': 8, 'legA.k': 44, 'legB.k': 44, 'legA.hz': 26, 'legB.hz': 26 })) },
+  { t: 3.0, ease: 'io', pose: X(STANCE, X(ROTOR, { 'hip.y': -0.14, 'hip.ry': 1005, 'spine.ry': 0, 'spine.rx': 6, 'spine.rz': 10, 'legA.k': 34, 'legB.k': 34, 'legA.hz': 24, 'legB.hz': 24 })) },
+  { t: 3.4, ease: 'snap', pose: X(STANCE, X(HELD, { 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 0, 'gtr.py': 12, 'gtr.pz': 16, 'gtr.rx': -78, 'gtr.ry': 0, 'gtr.rz': 0, 'hip.y': -0.3, 'hip.ry': 1030, 'hip.rx': 10, 'spine.rx': 40, 'head.rx': 16, 'legA.hx': 42, 'legA.k': 78, 'legB.k': 48 })) },
+  { t: 4.3, pose: X(STANCE, X(HELD, { 'gtr.gy': 20, 'gtr.ya': 19, 'gtr.yb': 23, 'gtr.px': 0, 'gtr.py': 12, 'gtr.pz': 16, 'gtr.rx': -78, 'gtr.ry': 0, 'gtr.rz': 0, 'hip.y': -0.28, 'hip.ry': 1030, 'hip.rx': 10, 'spine.rx': 34, 'head.rx': 10, 'legA.hx': 42, 'legA.k': 74, 'legB.k': 48 })) },
+  { t: 5.2, ease: 'io', pose: { 'gtr.on': 0, 'hip.ry': 1050 } }
+] };
+
+
+/* ---- special-move cameras: wide and high enough to see the hero AND the men he is hitting; the director also leans the view toward the group.
+   (counter times are authored before the tempo pass below) ---- */
+var CN = { dist: 6.6, h: 6.4, look: 1.0, fov: 46, rel: 3.14 };
+function K(t, dist, h, look, fov, rel) { return { t: t, dist: dist, h: h, look: look, fov: fov, rel: rel }; }
+MOVES.counterBoom.cam = [X(CN, { t: 0 }), K(0.5, 5.6, 2.3, 1.3, 44, 2.6), K(1.0, 6.6, 2.7, 1.3, 50, 2.3), K(1.5, 8.2, 3.8, 1.2, 56, 2.6), X(CN, { t: 1.95 })];
+MOVES.counterSmash.cam = [X(CN, { t: 0 }), K(0.4, 5.6, 2.7, 1.2, 46, 2.5), K(1.4, 6.3, 3.1, 1.2, 48, 2.0), K(2.1, 5.9, 2.5, 1.1, 44, 1.4), X(CN, { t: 2.9 })];
+MOVES.counterWhirl.cam = [X(CN, { t: 0 }), K(0.5, 6.0, 3.2, 1.2, 50, 2.7), K(1.75, 7.6, 4.3, 1.2, 56, 5.8), X(CN, { t: 2.4, rel: 6.3 })];
+MOVES.finisherWhirl.cam = [X(CN, { t: 0 }), K(0.6, 5.8, 1.8, 1.2, 46, 2.4),            /* low heroic shot from behind-side as the guitar comes off his back */
+  K(1.35, 6.5, 2.8, 1.2, 44, 1.5),                                                       /* three-quarter view of the coil, the men around him in frame */
+  K(1.9, 8.5, 6.8, 1.0, 52, 1.5), K(3.0, 9.5, 7.6, 0.9, 56, 4.7),                       /* high half-orbit: the whole ring of enemies and the cyclone */
+  K(3.4, 7.5, 3.0, 0.9, 48, 4.7), K(4.3, 8.0, 3.5, 1.0, 48, 4.7), X(CN, { t: 5.2, rel: 6.3 })];
+
+/* attack moves get a slower, heavier tempo so every phase has weight; counters are authored in real time */
+var TEMPO = 1.75;
+var TEMPO_BY = { counterCross: 1.6, hookB: 1.7, axeKick: 1.4, uppercut: 1.7, jab: 1.9, cross: 1.9, hook: 1.8, elbow: 1.7, knee: 1.7, kick: 1.7, roundhouse: 1.5 };   /* seconds scale: quick enough to feel like a brawl, slow enough to read */   /* seconds scale: strikes need time to read */
+
+/* ---- detailing pass: every attack gets a weight-shift lunge on the strike, a small preparation before the wind-up,
+   a follow-through past the impact and a two-step recovery with a settle, so nothing snaps between key poses ---- */
+var LUNGE = { counterCross: 0.09, hookB: 0.07, axeKick: -0.02, uppercut: 0.06, jab: 0.05, cross: 0.08, hook: 0.07, elbow: 0.06, knee: 0.08, kick: -0.04, roundhouse: -0.03 };
+function poseAt(k, name) { var v = k.pose[name]; return v === undefined ? (GUARD[name] === undefined ? 0 : GUARD[name]) : v; }
+function mixP(a, b, t) {
+  var o = {}, names = {}, k; for (k in a.pose) names[k] = 1; for (k in b.pose) names[k] = 1;
+  for (k in names) if (k.indexOf('gtr.') !== 0) { var va = poseAt(a, k), vb = poseAt(b, k); o[k] = va + (vb - va) * t; }
+  return o;
+}
+Object.keys(MOVES).forEach(function (n) {
+  var m = MOVES[n]; if (m.counter) return;
+  var keys = m.keys, ks = keys.slice(), ant = ks[1], last = ks[ks.length - 1], hold = ks[ks.length - 2], out = [ks[0]], i;
+  /* preparation: a small dip and the far shoulder drops before the main wind-up */
+  out.push({ t: ant.t * 0.5, ease: 'io', pose: X(mixP(ks[0], ant, 0.3), { 'hip.y': -0.095, 'head.rx': 12, 'spine.rz': -2.5 }) });
+  for (i = 1; i < ks.length - 1; i++) {
+    var kk = ks[i], isStrike = kk.ease === 'snap';
+    if (isStrike && LUNGE[n]) kk = { t: kk.t, ease: kk.ease, pose: X(kk.pose, { 'hip.z': LUNGE[n] }) };
+    if (kk === ks[ks.length - 2]) kk = { t: kk.t, ease: kk.ease, pose: X(kk.pose, { 'hip.z': LUNGE[n] || 0 }) };
+    out.push(kk);
+  }
+  var span = last.t - hold.t, dir = poseAt(hold, 'spine.ry') - GUARD['spine.ry'] > 0 ? 1 : -1;
+  out.push({ t: hold.t + span * 0.22, ease: 'io', pose: X(hold.pose, { 'spine.ry': poseAt(hold, 'spine.ry') + 6 * dir, 'hip.ry': poseAt(hold, 'hip.ry') + 5 * dir, 'head.ry': poseAt(hold, 'head.ry') + 4 * dir, 'hip.z': (LUNGE[n] || 0) * 0.8 }) });
+  out.push({ t: hold.t + span * 0.6, ease: 'io', pose: X(mixP(hold, last, 0.7), { 'hip.y': -0.045, 'hip.z': (LUNGE[n] || 0) * 0.25 }) });
+  out.push({ t: hold.t + span * 0.82, ease: 'io', pose: X(mixP(hold, last, 0.93), { 'hip.y': -0.06 }) });
+  out.push(last);
+  m.keys = out;
+});
+Object.keys(MOVES).forEach(function (n) {
+  var m = MOVES[n], f = m.tempo || TEMPO;
+  if (f === 1) return;
+  m.hit *= f; m.cancel *= f; m.len *= f; m.keys.forEach(function (k) { k.t *= f; });
+  if (m.hits) m.hits = m.hits.map(function (x) { return x * f; });
+  if (m.fx) m.fx.forEach(function (x) { x.t *= f; });
+  if (m.cam) m.cam.forEach(function (x) { x.t *= f; });
+});
+
+/* Double Dragon style string: two punches, a close-range knee, an elbow, and the kick that ends it */
+/* The fight string. Against a guard the first two blows are soaked up; after that the face work starts:
+   jab, jab from the other side, uppercut - then a hand blow and a leg blow, in either order. Everything varies a little each fight. */
+var HANDS = ['elbow', 'elbow', 'cross'], LEGS = ['axeKick', 'knee', 'roundhouse', 'knee'];
+function makeString(rand) {                                  /* rand: a () => 0..1 supplied by the caller */
+  var hooks = rand() < 0.5 ? ['hookB', 'hook'] : ['hook', 'hookB'];
+  var hand = HANDS[Math.floor(rand() * HANDS.length) % HANDS.length], leg = LEGS[Math.floor(rand() * LEGS.length) % LEGS.length];
+  return ['jab', 'cross'].concat(hooks, ['uppercut'], rand() < 0.5 ? [hand, leg] : [leg, hand]);
+}
+var COMBO = makeString(function () { return 0; });
+var SEQS = [COMBO];
+var MOVE_LABELS = [['counterBoom', 'Sonic boom'], ['counterSmash', 'Guitar smash'], ['counterWhirl', 'Guitar whirl'], ['finisherWhirl', 'Rage finisher'], ['counterCross', 'Counter cross'], ['hookB', 'Right hook'], ['axeKick', 'Axe kick'], ['uppercut', 'Uppercut'], ['jab', 'Jab'], ['cross', 'Cross'], ['hook', 'Hook'], ['elbow', 'Elbow'], ['knee', 'Knee'], ['kick', 'Push kick'], ['roundhouse', 'Roundhouse']];
+
+/* ---- moves from the saddle. Only the arms (and one leg for kicks) move: the hips stay on the seat and the other hand stays on the bar;
+   the rider's shoulders are turned toward the man by the view. Authored for a man on the RIGHT (rear hand armB, right leg legB); the left-hand
+   versions are mirrored. L/R in a name is the side the man stands on. ---- */
+function mirrorPose(pz) {
+  var o = {}, k, n, v;
+  for (k in pz) { n = k.replace(/^(arm|leg)([AB])\./, function (m, a, b) { return a + (b === 'A' ? 'B' : 'A') + '.'; }); v = pz[k]; if (/\.(pr|sy)$/.test(n)) v = -v; o[n] = v; }
+  return o;
+}
+function cloneMove(m, mirror, keepLegs) {
+  var c = JSON.parse(JSON.stringify(m));
+  c.keys.forEach(function (ky) {
+    var o = {}, k; for (k in ky.pose) { if (/^(hip\.|spine\.ry|spine\.rz|head\.ry|head\.rz)/.test(k)) continue; if (!keepLegs && /^leg/.test(k)) continue; o[k] = ky.pose[k]; }
+    ky.pose = mirror ? mirrorPose(o) : o;
+  });
+  c.bike = true; return c;
+}
+var BK_SRC = { Jab: ['jab', false], Hook: ['hook', false], Cross: ['cross', true], Elbow: ['elbow', true] };       /* [source clip, uses the rear hand] */
+Object.keys(BK_SRC).forEach(function (n) {
+  var src = MOVES[BK_SRC[n][0]], rear = BK_SRC[n][1];
+  MOVES['bk' + n + 'R'] = cloneMove(src, !rear); MOVES['bk' + n + 'L'] = cloneMove(src, rear);
+});
+MOVES.bkKickR = { bike: true, legs: 'legB', hit: 0.2, cancel: 0.36, len: 0.55, damage: 1.8, keys: [
+  { t: 0.00, pose: {} },
+  { t: 0.12, ease: 'in', pose: { 'legB.hx': 64, 'legB.hz': 34, 'legB.k': 104, 'legB.a': 6, 'spine.rx': 6 } },
+  { t: 0.2, ease: 'snap', pose: { 'legB.hx': 36, 'legB.hz': 78, 'legB.k': 12, 'legB.a': -30, 'legB.t': 30, 'spine.rx': 4 } },
+  { t: 0.32, pose: { 'legB.hx': 38, 'legB.hz': 76, 'legB.k': 14, 'legB.a': -28, 'legB.t': 30, 'spine.rx': 4 } },
+  { t: 0.55, ease: 'io', pose: {} }
+] };
+MOVES.bkKickL = cloneMove(MOVES.bkKickR, true, true); MOVES.bkKickL.legs = 'legA';
+/* counters: an elbow first; a sweep once the man is hurt; two men at once earn the double sweep */
+MOVES.bkCElbowR = cloneMove(MOVES.elbow, false); MOVES.bkCElbowR.counter = true; MOVES.bkCElbowR.damage = 2.4;
+MOVES.bkCElbowL = cloneMove(MOVES.elbow, true); MOVES.bkCElbowL.counter = true; MOVES.bkCElbowL.damage = 2.4;
+MOVES.bkSweepR = { bike: true, counter: true, hit: 0.24, cancel: 0.45, len: 0.58, damage: 3.4, keys: [
+  { t: 0.00, pose: {} },
+  { t: 0.14, ease: 'in', pose: { 'armB.sx': 72, 'armB.sz': 78, 'armB.e': 146, 'armB.pr': 20, 'spine.rx': 12 } },
+  { t: 0.24, ease: 'snap', pose: { 'armB.sx': 62, 'armB.sz': 8, 'armB.e': 122, 'armB.pr': -30, 'spine.rx': 14 } },
+  { t: 0.34, pose: { 'armB.sx': 62, 'armB.sz': 6, 'armB.e': 122, 'armB.pr': -30, 'spine.rx': 14 } },
+  { t: 0.58, ease: 'io', pose: {} }
+] };
+MOVES.bkSweepL = cloneMove(MOVES.bkSweepR, true, true); MOVES.bkSweepL.counter = true;
+MOVES.bkDouble = { bike: true, counter: true, hit: 0.22, hits: [0.22, 0.42], cancel: 0.62, len: 0.8, damage: 4.2, keys: [
+  { t: 0.00, pose: {} },
+  { t: 0.14, ease: 'in', pose: { 'armA.sx': 72, 'armA.sz': 76, 'armA.e': 146, 'armB.sx': 72, 'armB.sz': 76, 'armB.e': 146, 'spine.rx': 10 } },
+  { t: 0.22, ease: 'snap', pose: { 'armA.sx': 64, 'armA.sz': 8, 'armA.e': 122, 'armB.sx': 70, 'armB.sz': 84, 'armB.e': 140, 'spine.rx': 12 } },
+  { t: 0.32, ease: 'io', pose: { 'armA.sx': 72, 'armA.sz': 76, 'armA.e': 146, 'armB.sx': 72, 'armB.sz': 76, 'armB.e': 146, 'spine.rx': 10 } },
+  { t: 0.42, ease: 'snap', pose: { 'armB.sx': 64, 'armB.sz': 8, 'armB.e': 122, 'armA.sx': 70, 'armA.sz': 84, 'armA.e': 140, 'spine.rx': 12 } },
+  { t: 0.8, ease: 'io', pose: {} }
+] };
+
+var COUNTERS = ['counterBoom', 'counterSmash', 'counterWhirl'];
+var FINISHER = 'finisherWhirl';
+module.exports = { GUARD: GUARD, MOVES: MOVES, COMBO: COMBO, SEQS: SEQS, makeString: makeString, COUNTERS: COUNTERS, FINISHER: FINISHER, MOVE_LABELS: MOVE_LABELS };
+
+};
+defs["view/voxgrid"]=function(module,exports,require){
+/* view: dense voxel grids, shape primitives and a mesher with ambient occlusion and per-voxel colour jitter.
+   Pure maths on typed arrays (no THREE objects), so it runs in Node tests. Voxel (x,y,z) occupies [x,x+1) etc. */
+'use strict';
+
+var FILL = 0x1000000;
+
+function hex(s) { return parseInt(s.slice(1), 16); }
+function mix(a, b, t) {
+  var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255, br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+  return (Math.round(ar + (br - ar) * t) << 16) | (Math.round(ag + (bg - ag) * t) << 8) | Math.round(ab + (bb - ab) * t);
+}
+
+function createGrid(W, H, D) { return { W: W, H: H, D: D, d: new Uint32Array(W * H * D) }; }
+function ix(g, x, y, z) { return x + g.W * (y + g.H * z); }
+function inb(g, x, y, z) { return x >= 0 && y >= 0 && z >= 0 && x < g.W && y < g.H && z < g.D; }
+function set(g, x, y, z, c) { if (inb(g, x, y, z)) g.d[ix(g, x, y, z)] = (c & 0xffffff) | FILL; }
+function del(g, x, y, z) { if (inb(g, x, y, z)) g.d[ix(g, x, y, z)] = 0; }
+function get(g, x, y, z) { return inb(g, x, y, z) && g.d[ix(g, x, y, z)] !== 0 ? (g.d[ix(g, x, y, z)] & 0xffffff) : -1; }
+function solid(g, x, y, z) { return inb(g, x, y, z) && g.d[ix(g, x, y, z)] !== 0; }
+function count(g) { var n = 0, i; for (i = 0; i < g.d.length; i++) if (g.d[i]) n++; return n; }
+
+function paint(g, x, y, z, col) {
+  var c = typeof col === 'function' ? col(x, y, z) : col;
+  if (c == null || c < 0) return;
+  set(g, x, y, z, c);
+}
+
+function ellipsoid(g, cx, cy, cz, rx, ry, rz, col) {
+  var x0 = Math.max(0, Math.floor(cx - rx)), x1 = Math.min(g.W - 1, Math.ceil(cx + rx));
+  var y0 = Math.max(0, Math.floor(cy - ry)), y1 = Math.min(g.H - 1, Math.ceil(cy + ry));
+  var z0 = Math.max(0, Math.floor(cz - rz)), z1 = Math.min(g.D - 1, Math.ceil(cz + rz));
+  for (var z = z0; z <= z1; z++) for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
+    var dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry, dz = (z + 0.5 - cz) / rz;
+    if (dx * dx + dy * dy + dz * dz <= 1) paint(g, x, y, z, col);
+  }
+}
+
+function box(g, x0, y0, z0, x1, y1, z1, col) {
+  for (var z = z0; z <= z1; z++) for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) paint(g, x, y, z, col);
+}
+
+/* piecewise-linear lookup. table rows are [y, a, b, ...]; returns [a, b, ...] */
+function interp(table, y) {
+  var n = table.length, i, t, r = [];
+  if (y <= table[0][0]) return table[0].slice(1);
+  if (y >= table[n - 1][0]) return table[n - 1].slice(1);
+  for (i = 0; i < n - 1; i++) if (y >= table[i][0] && y <= table[i + 1][0]) break;
+  t = (y - table[i][0]) / (table[i + 1][0] - table[i][0]);
+  for (var k = 1; k < table[i].length; k++) r.push(table[i][k] + (table[i + 1][k] - table[i][k]) * t);
+  return r;
+}
+
+/* vertical tapered elliptic limb. table rows: [y, rx, rz, dx, dz] (dx, dz shift the slice centre) */
+function limb(g, table, cx, cz, y0, y1, col, grow) {
+  grow = grow || 0;
+  for (var y = y0; y <= y1; y++) {
+    var v = interp(table, y + 0.5);
+    var rx = v[0] + grow, rz = v[1] + grow, ox = cx + (v[2] || 0), oz = cz + (v[3] || 0);
+    if (rx <= 0.2 || rz <= 0.2) continue;
+    var xa = Math.max(0, Math.floor(ox - rx)), xb = Math.min(g.W - 1, Math.ceil(ox + rx));
+    var za = Math.max(0, Math.floor(oz - rz)), zb = Math.min(g.D - 1, Math.ceil(oz + rz));
+    for (var z = za; z <= zb; z++) for (var x = xa; x <= xb; x++) {
+      var dx = (x + 0.5 - ox) / rx, dz = (z + 0.5 - oz) / rz;
+      if (dx * dx + dz * dz <= 1) paint(g, x, y, z, col);
+    }
+  }
+}
+
+/* highest z index that is solid at (x, y); -1 if none. Used to hang face details on the surface. */
+function frontZ(g, x, y) { for (var z = g.D - 1; z >= 0; z--) if (solid(g, x, y, z)) return z; return -1; }
+function backZ(g, x, y) { for (var z = 0; z < g.D; z++) if (solid(g, x, y, z)) return z; return -1; }
+
+function h3(x, y, z, s) {
+  var h = Math.imul(x + 101, 73856093) ^ Math.imul(y + 211, 19349663) ^ Math.imul(z + 307, 83492791) ^ Math.imul(s + 1, 2654435761);
+  h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+
+var FACES = [
+  { n: [1, 0, 0], u: [0, 1, 0], v: [0, 0, 1] }, { n: [-1, 0, 0], u: [0, 0, 1], v: [0, 1, 0] },
+  { n: [0, 1, 0], u: [0, 0, 1], v: [1, 0, 0] }, { n: [0, -1, 0], u: [1, 0, 0], v: [0, 0, 1] },
+  { n: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] }, { n: [0, 0, -1], u: [0, 1, 0], v: [1, 0, 0] }
+];
+var CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+var AO = [0.52, 0.7, 0.86, 1.0];
+
+/* g: grid; pivot: grid-space point that becomes the mesh origin; vs: metres per voxel */
+function meshGrid(g, pivot, vs, opts) {
+  opts = opts || {};
+  var jit = opts.jitter == null ? 0.05 : opts.jitter, seed = opts.seed || 0;
+  var x, y, z, f, k, faces = 0, voxels = 0;
+  for (z = 0; z < g.D; z++) for (y = 0; y < g.H; y++) for (x = 0; x < g.W; x++) {
+    if (!g.d[ix(g, x, y, z)]) continue;
+    voxels++;
+    for (f = 0; f < 6; f++) if (!solid(g, x + FACES[f].n[0], y + FACES[f].n[1], z + FACES[f].n[2])) faces++;
+  }
+  var pos = new Float32Array(faces * 12), nor = new Float32Array(faces * 12), col = new Float32Array(faces * 12), idx = new Uint32Array(faces * 6);
+  var vi = 0, ii = 0, vc = 0, fi, ao = [0, 0, 0, 0];
+  for (z = 0; z < g.D; z++) for (y = 0; y < g.H; y++) for (x = 0; x < g.W; x++) {
+    var cv = g.d[ix(g, x, y, z)]; if (!cv) continue;
+    var r = ((cv >> 16) & 255) / 255, gg = ((cv >> 8) & 255) / 255, b = (cv & 255) / 255;
+    var j = 1 + (h3(x, y, z, seed) - 0.5) * 2 * jit;
+    for (f = 0; f < 6; f++) {
+      var F = FACES[f], n = F.n, u = F.u, v = F.v;
+      if (solid(g, x + n[0], y + n[1], z + n[2])) continue;
+      var px = x + n[0], py = y + n[1], pz = z + n[2];
+      for (k = 0; k < 4; k++) {
+        var su = CORNERS[k][0], sv = CORNERS[k][1];
+        var s1 = solid(g, px + su * u[0], py + su * u[1], pz + su * u[2]) ? 1 : 0;
+        var s2 = solid(g, px + sv * v[0], py + sv * v[1], pz + sv * v[2]) ? 1 : 0;
+        var c3 = solid(g, px + su * u[0] + sv * v[0], py + su * u[1] + sv * v[1], pz + su * u[2] + sv * v[2]) ? 1 : 0;
+        ao[k] = (s1 && s2) ? 0 : 3 - (s1 + s2 + c3);
+        pos[vi] = (x + 0.5 + 0.5 * n[0] + 0.5 * su * u[0] + 0.5 * sv * v[0] - pivot.x) * vs;
+        pos[vi + 1] = (y + 0.5 + 0.5 * n[1] + 0.5 * su * u[1] + 0.5 * sv * v[1] - pivot.y) * vs;
+        pos[vi + 2] = (z + 0.5 + 0.5 * n[2] + 0.5 * su * u[2] + 0.5 * sv * v[2] - pivot.z) * vs;
+        nor[vi] = n[0]; nor[vi + 1] = n[1]; nor[vi + 2] = n[2];
+        var br = AO[ao[k]] * j;
+        col[vi] = Math.min(1, r * br); col[vi + 1] = Math.min(1, gg * br); col[vi + 2] = Math.min(1, b * br);
+        vi += 3;
+      }
+      fi = vc; vc += 4;
+      if (ao[0] + ao[2] < ao[1] + ao[3]) { idx[ii++] = fi + 1; idx[ii++] = fi + 2; idx[ii++] = fi + 3; idx[ii++] = fi + 1; idx[ii++] = fi + 3; idx[ii++] = fi; }
+      else { idx[ii++] = fi; idx[ii++] = fi + 1; idx[ii++] = fi + 2; idx[ii++] = fi; idx[ii++] = fi + 2; idx[ii++] = fi + 3; }
+    }
+  }
+  return { positions: pos, normals: nor, colors: col, indices: idx, voxels: voxels, faces: faces, triangles: faces * 2, bytes: pos.byteLength * 3 + idx.byteLength };
+}
+
+module.exports = {
+  hex: hex, mix: mix, createGrid: createGrid, set: set, del: del, get: get, solid: solid, count: count, inb: inb,
+  ellipsoid: ellipsoid, box: box, limb: limb, interp: interp, frontZ: frontZ, backZ: backZ, meshGrid: meshGrid, h3: h3
+};
+
+};
+defs["view/herovox"]=function(module,exports,require){
+/* view: builds the Toofan voxel parts at 2.5 cm. Every part is its own grid with a pivot at its joint,
+   so the rig can bend it. Facing +z, up +y, the hero's left is +x. side s: +1 left, -1 right. Pure, no THREE. */
+'use strict';
+
+var vg = require('./voxgrid');
+var h = vg.hex, mix = vg.mix;
+
+var C = {
+  skin: h('#9a5f38'), skinD: h('#7f4b2b'), skinL: h('#b4733f'), skinDD: h('#69391f'),
+  hair: h('#14100e'), yel: h('#ffc21a'), yelD: h('#d99a0e'),
+  blu: h('#1f56c8'), bluD: h('#16408f'), bluL: h('#2f6be0'),
+  pants: h('#1d4bb5'), pantsD: h('#143a8c'), pantsL: h('#2a5fcf'),
+  shoe: h('#17181a'), shoeL: h('#2a2c31'), sole: h('#08080a'), lace: h('#9aa0a8'),
+  belt: h('#2a2118'), buckle: h('#d8dde2'), buckleD: h('#6b7078'), glove: h('#1b1b1b'), gloveL: h('#2c2c30'),
+  mouth: h('#6a2f26'), white: h('#f2f2f2'), pupil: h('#1a1a1a')
+};
+
+var TH = false;   /* true while building the thug variant: plain cropped hair, bare face, no guitar */
+var MAA = false;  /* true while building Maa: full white sleeves down to the wrists (only her face and hands show) */
+var HOME = false; /* true while building Toofan at home: no costume, no goggles - a robe over loose pyjamas, bare eyes */
+var KID = false;  /* true while building Toofan as a boy of 7-8 (the dream): short messy hair, bare face, a half-sleeve shirt, shorts, bare shins */
+
+function lerpAt(tbl, y) { return vg.interp(tbl, y); }
+
+/* ---------- head ---------- */
+function buildHead() {
+  var g = vg.createGrid(11, 18, 13), cx = 5.5;
+  function headCol(x, y, z) {
+    if (y >= 11 && y <= 12) return (HOME || KID) ? C.hair : C.blu;          /* headband (none at home, none on the boy) */
+    if (y >= 13) return C.hair;
+    if (z <= 3 && y >= 4) return C.hair;                                    /* back of head */
+    if (!TH && !KID && (x <= 1 || x >= 9) && z <= 9 && y >= 3) return C.hair;      /* long side locks */
+    return C.skin;
+  }
+  vg.ellipsoid(g, cx, 8.0, 6.0, 4.6, 6.0, 4.8, headCol);                    /* skull */
+  vg.ellipsoid(g, cx, 4.3, 6.6, 3.9, 3.2, 4.0, headCol);                    /* jaw */
+  if (!KID) {
+  vg.ellipsoid(g, cx, 14.4, 7.4, 2.7, 2.0, 3.3, C.hair);                    /* quiff body */
+  vg.ellipsoid(g, cx, 15.4, 8.6, 2.0, 1.4, 2.2, C.hair);                    /* swept-up front */
+  }
+  var HAIR2 = h('#241a16');
+  function hc(x, y, z) { return ((x * 7 + y * 3 + z * 5) % 4 === 0) ? HAIR2 : C.hair; }
+  if (KID) {                                                                 /* the boy's mop: a full round cap of short hair, ragged at the edge, a few strands sticking up */
+    vg.ellipsoid(g, cx, 12.4, 5.6, 5.5, 4.2, 5.6, function (x, y, z) { return (y >= 12 && vg.h3(x, y, z, 3) > 0.12) || (y >= 13 && z <= 7) ? hc(x, y, z) : null; });
+    [[3, 16, 6], [6, 16, 8], [8, 15, 5], [2, 15, 7]].forEach(function (q) { vg.set(g, q[0], q[1], q[2], hc(q[0], q[1], q[2])); });
+  }
+  vg.ellipsoid(g, cx, 12.2, 6.0, 5.4, 3.8, 5.4, function (x, y, z) { return y >= 13 ? hc(x, y, z) : null; }); /* full crown, swept back */
+  if (!TH && !KID) vg.ellipsoid(g, cx, 6.6, 3.0, 4.9, 6.2, 3.0, function (x, y, z) { return y >= 3 ? hc(x, y, z) : null; });  /* thick back and nape */
+  vg.ellipsoid(g, cx, 10.0, 6.0, 5.3, 2.6, 5.2, function (x, y, z) { return (y >= 11 && z <= 6) ? hc(x, y, z) : null; }); /* hair sweeping over the band at the sides */
+  /* long side locks falling past the ears to the jaw */
+  if (KID) [1, 9].forEach(function (x) { vg.box(g, x, 8, 3, x, 11, 7, function (xx, yy, zz) { return hc(xx, yy, zz); }); });   /* the boy: short messy hair over the ears */
+  if (!TH && !KID) [0, 1, 9, 10].forEach(function (x) { vg.box(g, x, 3, 2, x, 10, 9, function (xx, yy, zz) { return hc(xx, yy, zz); }); });
+  /* surface details */
+  function face(x, y, off, c) { if (y >= 5 || y <= 2) return; var z = vg.frontZ(g, x, y); if (z >= 0) vg.set(g, x, y, z + off, c); }
+  if (TH) {                                                                                            /* thug face: eyes, brows, nose, stubble, scowl */
+    [2, 3, 4, 6, 7, 8].forEach(function (x) { face(x, 7, 1, C.white); face(x, 8, 1, C.hair); });
+    face(3, 7, 1, C.pupil); face(7, 7, 1, C.pupil); face(5, 6, 1, C.skin); face(5, 5, 2, C.skinL);
+    [3, 4, 5, 6, 7].forEach(function (x) { face(x, 2, 0, C.mouth); });
+    for (var sy = 0; sy <= 3; sy++) for (var sx = 2; sx <= 8; sx++) if (vg.h3(sx, sy, 3, 5) < 0.45 && !(sy === 2)) face(sx, sy, 0, C.skinDD);
+  } else {
+  if (HOME || KID) {                                                                                   /* at home, and as a boy: his own eyes and brows, no glasses */
+    [2, 3, 4, 6, 7, 8].forEach(function (x) { face(x, 7, 1, C.white); face(x, 6, 1, C.skin); face(x, 8, 1, C.hair); face(x, 5, 0, C.skin); });
+    face(3, 7, 1, C.pupil); face(7, 7, 1, C.pupil); face(4, 7, 1, C.pupil); face(6, 7, 1, C.pupil); face(5, 7, 1, C.skin);
+  } else {
+  /* aviator-style sunglasses: black frame, deep-blue lenses with a glint, temple arms to the ears */
+  var LENS = h('#0d1b3a'), LENS2 = h('#16306b'), FRAME = h('#0b0b0d');
+  [2, 3, 4, 6, 7, 8].forEach(function (x) { face(x, 8, 1, FRAME); face(x, 5, 0, C.skin); });             /* top rim */
+  [2, 3, 4, 6, 7, 8].forEach(function (x) { face(x, 7, 1, (x === 2 || x === 6) ? LENS2 : LENS); face(x, 6, 1, (x === 4 || x === 8) ? LENS : LENS2); });
+  face(3, 7, 1, h('#5b8cff')); face(7, 7, 1, h('#5b8cff'));                                                          /* glint */
+  face(5, 7, 1, FRAME); face(1, 7, 0, FRAME); face(9, 7, 0, FRAME);                                    /* bridge + temples */
+  [2, 3, 4, 6, 7, 8].forEach(function (x) { face(x, 5, 1, FRAME); });                                  /* bottom rim */
+  }
+  face(5, 6, 1, C.skin); face(5, 5, 2, C.skinL); face(4, 5, 1, C.skin); face(6, 5, 1, C.skin);        /* nose */
+  face(5, 8, 0, C.skin);
+  if (KID) { face(4, 2, 0, C.mouth); face(5, 2, 0, C.mouth); face(6, 2, 0, C.mouth); }   /* a boy's mouth */
+  if (!KID) {
+  /* rugged beard and moustache: extruded, two tones, a few grey flecks, cheek line left ragged */
+  var GREY = h('#4b4540'), BRD = h('#1b1411');
+  function tuft(x, y, off) {
+    var z0 = vg.frontZ(g, x, y); if (z0 < 0 || z0 + off > 12) return;
+    var r = vg.h3(x, y, 7, 11), col = r < 0.07 ? GREY : (r < 0.5 ? HAIR2 : BRD);
+    for (var o = 1; o <= off; o++) vg.set(g, x, y, z0 + o, col);
+  }
+  for (var by = 0; by <= 9; by++) for (var bx = 1; bx <= 9; bx++) {
+    var ax = Math.abs(bx - 5);
+    if (by >= 6) { if (ax >= 4) tuft(bx, by, 1); continue; }                                           /* hair over the temples, only the forehead stays bare */
+    if (by === 5 && ax < 4) continue;                                                                  /* lens rims */
+    if (by === 4 && ax < 2) continue;                                                                  /* under the nose */
+    if (by === 2 && ax <= 1) continue;                                                                 /* mouth gap */
+    if (by === 0 && ax > 3) continue;
+    var depth = (by <= 1 && ax <= 2) ? 2 : 1;
+    if (by === 0 && ax <= 1) depth = 3;
+    tuft(bx, by, depth);
+  }
+  for (var mx = 2; mx <= 8; mx++) { tuft(mx, 3, 2); if (Math.abs(mx - 5) >= 2) tuft(mx, 2, 1); if (Math.abs(mx - 5) >= 3) tuft(mx, 1, 1); }   /* thick moustache, drooping ends */
+  face(5, 2, 0, C.mouth); face(4, 2, 0, C.mouth); face(6, 2, 0, C.mouth);                              /* lips just visible between moustache and beard */
+  }
+  }
+  if (!TH && !HOME && !KID) { face(5, 11, 1, C.yel); face(5, 12, 1, C.yel); face(4, 11, 0, C.yelD); face(6, 11, 0, C.yelD); }          /* headband stud */
+  return { grid: g, pivot: { x: 5.5, y: 1.5, z: 5.0 } };
+}
+
+/* ---------- neck ---------- */
+function buildNeck() {
+  var g = vg.createGrid(7, 7, 7), tbl = [[0, 3.2, 3.0], [3, 2.9, 2.7], [7, 2.9, 2.7]];
+  vg.limb(g, tbl, 3.5, 3.5, 0, 6, function (x, y, z) { return (z >= 4 && y >= 2) ? C.skinD : C.skin; });
+  return { grid: g, pivot: { x: 3.5, y: 1.0, z: 3.5 } };
+}
+
+/* ---------- torso: V taper, pecs, abs, sash ---------- */
+function buildTorso() {
+  var W = 25, H = 25, D = 13, cx = 12.5, cz = 6.5, g = vg.createGrid(W, H, D);
+  var prof = [[0, 7.0, 4.8], [2, 6.7, 4.5], [5, 6.9, 4.6], [8, 7.8, 4.8], [11, 8.8, 5.1], [14, 9.6, 5.5], [17, 10.0, 5.1], [19, 10.0, 4.6],
+              [21, 8.0, 3.9], [22, 6.0, 3.6], [23, 4.6, 3.3], [25, 3.0, 3.0]];
+  function col(x, y, z) {
+    var dx = x + 0.5 - cx, dz = z + 0.5 - cz, front = dz > 0.4, adx = Math.abs(dx);
+    if (y <= 1) {                                                           /* belt and buckle */
+      if (front && adx < 2.6 && dz > 3.2) return (adx > 1.6 || y === 0) ? C.buckle : C.buckleD;
+      return C.belt;
+    }
+    if (y >= 20) return (z + 0.5 > cz + 2.6 && adx < 3.4 && y <= 20) ? C.skinD : C.skin;      /* trapezius and neck base */
+    if (front && y >= 15 && adx <= (y - 13.4) * 0.42) return (adx < 0.6 && y >= 16) ? C.skinD : C.skin;      /* V neck */
+    if (!front && y >= 17 && adx <= 3.2) return C.skin;                      /* back neckline */
+    if (adx >= 9.1 && y >= 14) return C.skin;                                /* armhole */
+    if (Math.abs(dx + (y - 11) * 0.95) <= 1.9) return (Math.abs(dx + (y - 11) * 0.95) > 1.3) ? C.yelD : C.yel;   /* sash */
+    var c = C.blu;
+    if (front && dz > 2.6) {
+      if (y === 5 || y === 8) c = C.bluD;                                    /* ab creases through the fabric */
+      if (y >= 3 && y <= 10 && adx < 0.9) c = C.bluD;
+      if (y === 12 && adx > 0.5) c = C.bluD;                                 /* under the pecs */
+    }
+    if (!front && adx < 0.7 && y >= 4 && y <= 18) c = C.bluD;                /* spine groove */
+    if (y === 2) c = C.bluD;                                                 /* hem */
+    if (adx > 6.8 && y < 12) c = mix(c, C.bluD, 0.45);                       /* flanks */
+    return c;
+  }
+  for (var y = 0; y < H; y++) {
+    var v = lerpAt(prof, y + 0.5), hw = v[0], hd = v[1];
+    for (var z = 0; z < D; z++) for (var x = 0; x < W; x++) {
+      var dx = (x + 0.5 - cx) / hw, dz = (z + 0.5 - cz) / hd;
+      if (dx * dx + dz * dz <= 1) vg.set(g, x, y, z, col(x, y, z));
+    }
+  }
+  if (!KID) {
+  [1, -1].forEach(function (s) { vg.ellipsoid(g, cx + s * 4.3, 14.0, cz + 3.7, 3.8, 2.9, 2.1, col); });         /* pecs */
+  [1, -1].forEach(function (s) { vg.ellipsoid(g, cx + s * 8.4, 13.5, cz - 1.2, 2.2, 4.0, 2.4, col); });        /* lats */
+  }
+  return { grid: g, pivot: { x: cx, y: 2.0, z: cz } };
+}
+
+/* ---------- pelvis ---------- */
+function buildPelvis() {
+  var W = 17, H = 11, D = 11, cx = 8.5, cz = 5.5, g = vg.createGrid(W, H, D);
+  var prof = [[0, 4.6, 3.6], [2, 6.8, 4.6], [5, 7.5, 4.9], [8, 6.5, 4.4], [10, 6.0, 4.0]];
+  function col(x, y, z) {
+    var dx = Math.abs(x + 0.5 - cx), front = z + 0.5 > cz;
+    if (front && dx < 0.6 && y >= 3 && y <= 8) return C.pantsD;
+    if (!front && dx < 0.6 && y >= 2) return C.pantsD;
+    return C.pants;
+  }
+  for (var y = 0; y < 10; y++) {
+    var v = lerpAt(prof, y + 0.5);
+    for (var z = 0; z < D; z++) for (var x = 0; x < W; x++) {
+      var dx = (x + 0.5 - cx) / v[0], dz = (z + 0.5 - cz) / v[1];
+      if (dx * dx + dz * dz <= 1) vg.set(g, x, y, z, col(x, y, z));
+    }
+  }
+  [1, -1].forEach(function (s) { vg.ellipsoid(g, cx + s * 3.2, 3.8, cz - 3.0, 3.5, 3.3, 2.6, col); });
+  return { grid: g, pivot: { x: cx, y: 4.0, z: cz } };
+}
+
+/* ---------- leg parts ---------- */
+function buildThigh(s) {
+  var g = vg.createGrid(11, 22, 11), cx = 5.5, cz = 5.5;
+  var tbl = [[0, 3.0, 3.1], [2, 3.7, 3.9], [6, 4.3, 4.4], [11, 4.8, 5.0], [15, 5.0, 5.1], [19, 4.8, 4.8], [21, 4.0, 4.0], [22, 2.6, 2.6]];
+  function col(x, y, z) {
+    var dx = (x + 0.5 - cx) * s, rx = lerpAt(tbl, y + 0.5)[0];
+    if (!KID && dx >= rx - 1.7 && y >= 1 && y <= 20 && Math.abs(z + 0.5 - cz) <= 1.1) return C.yel;
+    if (KID && y <= 9) return (z + 0.5 < cz - 2.0) ? C.skinD : C.skin;                /* the boy's shorts end above the knee */
+    if (dx <= -rx + 1.3) return C.pantsD;
+    return (z + 0.5 < cz - 3.4) ? C.pantsD : C.pants;
+  }
+  vg.limb(g, tbl, cx, cz, 0, 21, col);
+  vg.ellipsoid(g, cx + s * 0.5, 10.8, cz + 3.3, 3.0, 4.7, 2.2, col);                  /* quad */
+  vg.ellipsoid(g, cx - s * 0.4, 12.5, cz - 3.3, 3.2, 4.2, 2.0, col);                  /* hamstring */
+  return { grid: g, pivot: { x: cx, y: 19.0, z: cz } };
+}
+
+function buildShin(s) {
+  var g = vg.createGrid(9, 21, 11), cx = 4.5, cz = 5.5;
+  var tbl = [[0, 2.4, 2.6], [3, 2.6, 2.8], [7, 3.1, 3.4], [12, 3.7, 4.0], [16, 3.8, 3.9], [18.5, 3.9, 3.9], [21, 3.2, 3.2]];
+  function col(x, y, z) {
+    var dx = (x + 0.5 - cx) * s, rx = lerpAt(tbl, y + 0.5)[0];
+    if (KID) return (z + 0.5 < cz - 2.2) ? C.skinD : C.skin;                          /* the boy's bare shins */
+    if (y <= 2) return C.pantsD;                                                     /* cuff */
+    if (dx >= rx - 1.5 && y <= 20 && Math.abs(z + 0.5 - cz) <= 1.1) return C.yel;
+    if (dx <= -rx + 1.1) return C.pantsD;
+    return C.pants;
+  }
+  vg.limb(g, tbl, cx, cz, 1, 20, col);
+  vg.ellipsoid(g, cx, 11.5, cz - 1.9, 3.0, 3.6, 2.4, col);                           /* calf */
+  if (!KID) {
+  vg.ellipsoid(g, cx, 18.0, cz + 3.3, 3.1, 2.5, 1.7, function () { return C.pantsD; });  /* knee pad */
+  vg.ellipsoid(g, cx, 18.4, cz + 3.9, 1.9, 1.3, 1.0, function () { return C.pants; });
+  }
+  return { grid: g, pivot: { x: cx, y: 18.5, z: cz } };
+}
+
+function buildFoot() {
+  var W = 9, H = 7, D = 8, cx = 4.5, g = vg.createGrid(W, H, D);
+  var hwT = [[0, 2.3], [2, 2.4], [4, 2.7], [7, 2.9], [8, 2.6]], topT = [[0, 5.0], [2, 5.0], [3, 4.0], [5, 3.0], [7, 2.6], [8, 2.2]];
+  for (var z = 0; z < D; z++) for (var x = 0; x < W; x++) {
+    var hw = lerpAt(hwT, z + 0.5)[0], top = lerpAt(topT, z + 0.5)[0], dx = Math.abs(x + 0.5 - cx);
+    if (dx > hw) continue;
+    var yt = Math.round(top * (1 - Math.pow(dx / hw, 4) * 0.4));
+    for (var y = 0; y < yt; y++) {
+      var c = C.shoe;
+      if (y === 0) c = C.sole;
+      else if (z >= 6 && y === yt - 1) c = C.shoeL;                                  /* toe cap */
+      else if (z >= 3 && z <= 6 && dx < 1.1 && y === yt - 1) c = (z & 1) ? C.lace : C.shoeL;     /* laces */
+      else if (z <= 1 && y >= 2) c = C.shoeL;                                        /* heel counter */
+      vg.set(g, x, y, z, c);
+    }
+  }
+  return { grid: g, pivot: { x: cx, y: 3.0, z: 2.5 } };
+}
+
+function buildToe() {
+  var W = 9, H = 4, D = 4, cx = 4.5, g = vg.createGrid(W, H, D);
+  var hwT = [[0, 2.9], [2, 2.7], [4, 1.7]], topT = [[0, 2.6], [2, 2.3], [4, 1.2]];
+  for (var z = 0; z < D; z++) for (var x = 0; x < W; x++) {
+    var hw = lerpAt(hwT, z + 0.5)[0], top = lerpAt(topT, z + 0.5)[0], dx = Math.abs(x + 0.5 - cx);
+    if (dx > hw) continue;
+    var yt = Math.max(1, Math.round(top * (1 - Math.pow(dx / hw, 4) * 0.4)));
+    for (var y = 0; y < yt; y++) vg.set(g, x, y, z, y === 0 ? C.sole : (y === yt - 1 ? C.shoeL : C.shoe));
+  }
+  return { grid: g, pivot: { x: cx, y: 1.0, z: 0.0 } };
+}
+
+/* ---------- arm parts ---------- */
+function buildUpperArm(s) {
+  var g = vg.createGrid(11, 18, 11), cx = 5.5, cz = 5.5;
+  var tbl = [[0, 2.7, 2.7], [2, 3.0, 3.0], [6, 3.4, 3.4], [9, 3.7, 3.6], [12, 4.3, 4.3], [14, 4.5, 4.5], [16, 3.8, 3.8], [18, 2.5, 2.5]];
+  function col(x, y, z) {
+    var dz = z + 0.5 - cz;
+    if (MAA) return dz < -2.5 ? C.bluD : C.blu;                                       /* her sleeve */
+    if (KID) return y >= 9 ? (dz < -2.5 ? C.bluD : (y === 9 ? C.bluD : C.blu)) : (dz < -2.5 ? C.skinD : C.skin);   /* the boy's half sleeve */
+    if (y === 2 && dz > 0) return C.skinD;                                           /* elbow crease */
+    if (dz < -3.0 && y >= 4 && y <= 11) return C.skinD;                              /* triceps shade */
+    return C.skin;
+  }
+  vg.limb(g, tbl, cx, cz, 0, 17, col);
+  if (!MAA && !KID) vg.ellipsoid(g, cx, 8.4, cz + 1.6, 2.7, 3.4, 2.3, function () { return C.skinL; }); /* biceps */
+  if (KID) vg.ellipsoid(g, cx, 14.4, cz, 3.2, 2.6, 3.1, col); else vg.ellipsoid(g, cx, 14.4, cz, 4.1, 3.0, 3.9, col);   /* deltoid (a boy's: slight) */
+  if (!MAA && !KID) vg.limb(g, tbl, cx, cz, 8, 9, C.yel, 0.45);                                /* armband */
+  return { grid: g, pivot: { x: cx, y: 14.0, z: cz } };
+}
+
+function buildForearm(s) {
+  var g = vg.createGrid(9, 14, 9), cx = 4.5, cz = 4.5;
+  var tbl = [[0, 2.2, 2.0], [1, 2.3, 2.1], [3, 2.6, 2.4], [6, 3.2, 3.0], [8, 3.5, 3.3], [11.5, 3.3, 3.3], [13, 2.8, 2.8], [14, 2.0, 2.0]];
+  function col(x, y, z) {
+    var dz = z + 0.5 - cz;
+    if (MAA) return y <= 1 ? C.bluD : (dz < -2.0 ? C.bluD : C.blu);                   /* her sleeve to the wrist */
+    if (KID) return dz < -2.2 ? C.skinD : C.skin;                                     /* the boy's bare forearm */
+    if (y <= 4) return (y === 4) ? C.gloveL : C.glove;                               /* wrist guard */
+    if (dz < -2.2 && y >= 6) return C.skinD;
+    if (y >= 7 && y <= 9 && dz > 1.6) return C.skinL;                                /* forearm muscle */
+    return C.skin;
+  }
+  vg.limb(g, tbl, cx, cz, 0, 13, col);
+  if (!MAA && !KID) vg.limb(g, tbl, cx, cz, 1, 3, function () { return C.glove; }, 0.35);
+  return { grid: g, pivot: { x: cx, y: 11.5, z: cz } };
+}
+
+function buildHand(s) {
+  var g = vg.createGrid(7, 8, 7), cx = 3.5, cz = 3.5;
+  function col(x, y, z) {
+    var dx = (x + 0.5 - cx) * s;
+    if (y >= 5) return C.glove;                                                      /* glove over palm and back of hand */
+    if (dx >= 1.0 && y >= 3) return C.glove;                                         /* back of hand */
+    if (y <= 1 && dx < 1.0) return (z & 1) ? C.skinL : C.skin;                       /* knuckles */
+    return (z & 1) ? C.skin : C.skinD;                                               /* curled fingers */
+  }
+  vg.ellipsoid(g, cx, 4.0, cz, 2.7, 3.6, 2.7, col);
+  vg.ellipsoid(g, cx - s * 1.0, 4.6, cz + 2.7, 1.4, 2.0, 1.2, function () { return C.skin; });   /* thumb */
+  return { grid: g, pivot: { x: cx, y: 7.0, z: cz } };
+}
+
+/* ---------- headband tail ---------- */
+/* ---------- chin beard: a short tapering length below the jaw ---------- */
+function buildBeard() {
+  var W = 11, H = 5, D = 5, g = vg.createGrid(W, H, D), HAIR2 = h('#241a16'), GREY = h('#4b4540');
+  for (var y = 0; y < H; y++) for (var z = 0; z < D; z++) for (var x = 0; x < W; x++) {
+    var hw = 4.0 - y * 0.6, dz = 2.6 - y * 0.2;
+    var ex = (x + 0.5 - 5.5) / Math.max(1, hw), ez = (z + 0.5 - 2.5) / Math.max(1, dz);
+    if (ex * ex + ez * ez > 1) continue;
+    if (y <= 2 && vg.h3(x, y, z, 31) < (2 - y) * 0.2) continue;                                       /* ragged tip */
+    var r = vg.h3(x, y, z, 17);
+    vg.set(g, x, H - 1 - y, z, r < 0.07 ? GREY : (r < 0.5 ? HAIR2 : C.hair));
+  }
+  return { grid: g, pivot: { x: 5.5, y: H - 0.5, z: 2.5 } };
+}
+
+/* ---------- long hair: three hanging segments, each a flat tapered lock with ragged tips ---------- */
+function buildHairSeg(i) {
+  var W = 11, H = 5, D = 4, g = vg.createGrid(W, H, D), HAIR2 = h('#241a16'), hw = [5.0, 4.4, 3.4][i], dz = [3.6, 3.2, 2.4][i];
+  for (var y = 0; y < H; y++) for (var z = 0; z < D; z++) for (var x = 0; x < W; x++) {
+    var ex = (x + 0.5 - 5.5) / hw, ez = (z + 0.5 - 2.0) / (dz / 2 + 0.2);
+    if (ex * ex + ez * ez > 1) continue;
+    if (i === 2 && y <= 2 && vg.h3(x, y, z, 21) < 0.45 + (2 - y) * 0.12) continue;                    /* ragged tips */
+    if (i === 2 && y <= 1 && ((x * 3 + z) % 3 === 0)) continue;
+    vg.set(g, x, y, z, ((x * 7 + y * 3 + z * 5 + i) % 4 === 0) ? HAIR2 : ((x + i) % 5 === 0 ? h('#0d0a09') : C.hair));
+  }
+  return { grid: g, pivot: { x: 5.5, y: H - 0.5, z: 2.0 } };
+}
+
+/* ---------- electric guitar. Grid axes: +y along the neck, +z out of the face (pickups side). Pivot at the body centre. ---------- */
+function buildGuitar() {
+  var W = 15, H = 36, D = 7, g = vg.createGrid(W, H, D), cx = 7.0;
+  var RED = h('#c9261c'), REDD = h('#7d140f'), PICK = h('#f1e8d2'), CHROME = h('#cfd5da'), CHROMED = h('#7b838a'), NECK = h('#d9a85b'),
+      FRET = h('#2f1d12'), FRETL = h('#8a6a44'), BLK = h('#121214'), GOLD = h('#ffc21a');
+  function inBody(x, y) {
+    var lx = (x + 0.5 - cx) / 6.4, ly = (y + 0.5 - 5.2) / 5.3, ux = (x + 0.5 - cx) / 5.2, uy = (y + 0.5 - 11.8) / 4.4;
+    var horn = (x + 0.5 - (cx + 3.4)) * (x + 0.5 - (cx + 3.4)) / 4 + (y + 0.5 - 15.0) * (y + 0.5 - 15.0) / 5.0 <= 1;
+    return lx * lx + ly * ly <= 1 || ux * ux + uy * uy <= 1 || horn;
+  }
+  for (var y = 0; y < 17; y++) for (var x = 0; x < W; x++) {
+    if (!inBody(x, y)) continue;
+    var edge = !inBody(x - 1, y) || !inBody(x + 1, y) || !inBody(x, y - 1) || !inBody(x, y + 1);
+    var d = Math.hypot(x + 0.5 - cx, (y + 0.5 - 8.5) * 0.7), burst = vg.mix(RED, REDD, Math.min(1, d / 8.2));
+    for (var z = 0; z < 3; z++) {
+      var c = burst;
+      if (edge && z === 2) c = GOLD;                                       /* binding in the hero's yellow */
+      else if (z === 0) c = REDD;
+      vg.set(g, x, y, z, c);
+    }
+  }
+  /* pickguard, pickups, bridge, knobs on the front face (z = 3 sits proud) */
+  for (var py = 7; py <= 14; py++) for (var px = 3; px <= 11; px++) if (inBody(px, py) && inBody(px, py + 1) && ((px - cx) * (px - cx) * 0.12 + 0 < 3.4)) vg.set(g, px, py, 3, PICK);
+  [9, 11, 13].forEach(function (yy) { for (var xx = 4; xx <= 10; xx++) vg.set(g, xx, yy, 4, (xx === 5 || xx === 7 || xx === 9) ? CHROME : BLK); });
+  for (var bx = 5; bx <= 9; bx++) vg.set(g, bx, 5, 4, bx % 2 ? CHROME : CHROMED);                    /* bridge */
+  vg.set(g, 5, 2, 4, CHROME); vg.set(g, 8, 2, 4, CHROME); vg.set(g, 10, 3, 4, CHROME);               /* knobs */
+  /* neck: maple back, dark fretboard with frets, strings as two silver lines */
+  for (var ny = 15; ny < 31; ny++) for (var nx = 6; nx <= 8; nx++) {
+    vg.set(g, nx, ny, 1, NECK); vg.set(g, nx, ny, 2, NECK);
+    vg.set(g, nx, ny, 3, (ny % 3 === 0) ? FRETL : FRET);
+  }
+  for (var sy = 15; sy < 31; sy++) { vg.set(g, 7, sy, 4, h('#e8ecef')); }
+  /* headstock with tuners */
+  for (var hy = 31; hy < 36; hy++) for (var hx = 5; hx <= 9; hx++) { vg.set(g, hx, hy, 1, BLK); vg.set(g, hx, hy, 2, BLK); }
+  [32, 34].forEach(function (yy) { vg.set(g, 4, yy, 2, CHROME); vg.set(g, 10, yy, 2, CHROME); });
+  vg.set(g, 7, 33, 3, GOLD);
+  return { grid: g, pivot: { x: cx + 0.5, y: 7.0, z: 1.5 } };
+}
+
+var THUG = { skin: h('#b27a50'), skinD: h('#946238'), skinL: h('#c78b5c'), skinDD: h('#6e4528'), hair: h('#1c1612'),
+  yel: h('#6d6a5a'), yelD: h('#55523f'), blu: h('#8c2f2b'), bluD: h('#6a201e'), bluL: h('#a8413a'),
+  pants: h('#4b4a3e'), pantsD: h('#37362d'), pantsL: h('#5d5c4e'), belt: h('#15110d'), shoe: h('#3a2a1c'), shoeL: h('#4f3a27') };
+
+/* a constable for the arrest scenes: the thug's build in khaki, with a dark belt (added for ride mode; the thug and hero are unchanged) */
+var COP = { skin: h('#a8754e'), skinD: h('#8c5e3c'), skinL: h('#bd8659'), skinDD: h('#6a4226'), hair: h('#16120e'),
+  yel: h('#c9b27a'), yelD: h('#a99560'), blu: h('#c2a86c'), bluD: h('#a68e55'), bluL: h('#d6be84'),
+  pants: h('#b59d64'), pantsD: h('#97824f'), pantsL: h('#c8b077'), belt: h('#3a2414'), shoe: h('#15110d'), shoeL: h('#2a221a') };
+
+/* each kind of fighter gets his own clothes over the thug's build: vest (yel), shirt (blu), trousers; and his own skin and hair */
+var KIND_PAL = {
+  stick:   { yel: h('#3b3a34'), yelD: h('#2a2925'), blu: h('#6b4a2a'), bluD: h('#52381f'), bluL: h('#7d5a36') },
+  chain:   { yel: h('#1d1d22'), yelD: h('#121216'), blu: h('#2c2c33'), bluD: h('#1c1c22'), bluL: h('#3a3a44'), pants: h('#24242a'), pantsD: h('#18181c'), pantsL: h('#303038') },
+  heavy:   { yel: h('#efe3c8'), yelD: h('#d6c8a8'), blu: h('#efe3c8'), bluD: h('#d6c8a8'), bluL: h('#fff6e0'), pants: h('#6b2d2a'), pantsD: h('#52211f'), pantsL: h('#7d3a36'), skin: h('#9a6440'), skinD: h('#7c4e30'), skinL: h('#ad7450') },
+  kicker:  { yel: h('#c8962a'), yelD: h('#a67a1e'), blu: h('#1f6b5a'), bluD: h('#165244'), bluL: h('#2a826e'), pants: h('#2d3d58'), pantsD: h('#202c40'), pantsL: h('#3a4d6e') },
+  blocker: { yel: h('#2a4a8c'), yelD: h('#1f386b'), blu: h('#2a4a8c'), bluD: h('#1f386b'), bluL: h('#3a5ca6'), pants: h('#3a3a3a'), pantsD: h('#2a2a2a'), pantsL: h('#4a4a4a') },
+  thrower: { yel: h('#5a7a2a'), yelD: h('#45601f'), blu: h('#d8d0b8'), bluD: h('#bfb69c'), bluL: h('#ebe4cf'), skin: h('#c08458'), skinD: h('#a06c44'), skinL: h('#d29466') }
+};
+/* Toofan at home: a deep maroon robe with a pale tie and trim, loose dark pyjamas, bare hands, worn chappals */
+var HOME_PAL = { yel: h('#c9a46a'), yelD: h('#a8854c'), blu: h('#5a2328'), bluD: h('#41181c'), bluL: h('#6e2d33'),
+  pants: h('#2c2a33'), pantsD: h('#201f26'), pantsL: h('#38363f'), glove: h('#9a5f38'), gloveL: h('#b4733f'), shoe: h('#4a3424'), shoeL: h('#5e4430'), belt: h('#41181c'), buckle: h('#5a2328'), buckleD: h('#41181c') };
+/* Maa (the Thappad scene): a plain white sari blouse over the body, white hair, an older warm skin; the sari itself is draped on in view/maavox */
+var MAA_PAL = { skin: h('#b98b66'), skinD: h('#9c7252'), skinL: h('#c99c78'), skinDD: h('#7d5a40'), hair: h('#ebe8e1'),
+  yel: h('#f2efe7'), yelD: h('#d8d2c4'), blu: h('#f2efe7'), bluD: h('#d8d2c4'), bluL: h('#faf8f2'),
+  pants: h('#eeeae0'), pantsD: h('#d6d0c2'), pantsL: h('#f7f4ec'), belt: h('#e6e0d2'), shoe: h('#9c7252'), shoeL: h('#b98b66'),
+  glove: h('#b98b66'), gloveL: h('#c99c78'), buckle: h('#e6e0d2'), buckleD: h('#d6d0c2') };
+/* Maa as she was when Toofan was a boy (the dream): the same build and sari, black hair, younger skin */
+var MAA_YOUNG = { hair: h('#18120e'), skin: h('#c08f69'), skinD: h('#a37553'), skinL: h('#d0a07b'), skinDD: h('#835d42') };
+/* Toofan at 7-8 (the dream): a faded blue half-sleeve school shirt, khaki shorts, worn brown chappals, his own skin and black hair */
+var KID_PAL = { hair: h('#16100c'), yel: h('#4a86c4'), yelD: h('#3a6ea6'), blu: h('#4a86c4'), bluD: h('#3a6ea6'), bluL: h('#5c98d4'),
+  pants: h('#8a7650'), pantsD: h('#6e5d3e'), pantsL: h('#9c8760'), belt: h('#6e5d3e'), buckle: h('#8a7650'), buckleD: h('#6e5d3e'),
+  glove: h('#b07a52'), gloveL: h('#c48a60'), shoe: h('#5a3b24'), shoeL: h('#6e4a2e'), sole: h('#3a2616'), lace: h('#5a3b24') };
+/* RAUDRA-specific palettes on Toofan's dense 2.5cm sculpt; never recolour the source meshes in place. */
+var RAUDRA_HERO_PAL = {
+ fury: { skin:'#b88057', skinD:'#916044', skinL:'#d49a6b', skinDD:'#69442f', hair:'#171219', yel:'#d7a251', yelD:'#97652a', blu:'#55312c', bluD:'#312326', bluL:'#78402e', pants:'#343336', pantsD:'#242328', pantsL:'#4b4141', glove:'#654633', gloveL:'#8e6446', belt:'#452a24', buckle:'#b17b43' },
+ maverick: { skin:'#af7b5c', skinD:'#8a593f', skinL:'#cb9870', skinDD:'#70452e', hair:'#a99e91', yel:'#a6d1d8', yelD:'#5a8b99', blu:'#1a3b54', bluD:'#11283e', bluL:'#2a5473', pants:'#1b2e39', pantsD:'#11202b', pantsL:'#2d4050', glove:'#282e37', gloveL:'#404b58', belt:'#18202c', buckle:'#b9bdc6' },
+ titan: { skin:'#af7b54', skinD:'#855337', skinL:'#d09a73', skinDD:'#70422b', hair:'#221719', yel:'#b14344', yelD:'#822b35', blu:'#e0cbb0', bluD:'#b49c87', bluL:'#f6ddc0', pants:'#d2c0a2', pantsD:'#a9977e', pantsL:'#e9d9bf', glove:'#ac7e59', gloveL:'#c39366', belt:'#9c4443', buckle:'#d6b05d' }
+};
+var RAUDRA_ENEMY_PAL = {
+ street:{skin:'#af72b5',skinD:'#87538f',skinL:'#c58dcb',hair:'#30203d',yel:'#b75b97',yelD:'#853e74',blu:'#4a2c53',bluD:'#302039',bluL:'#67406c',pants:'#292238',pantsD:'#211b30',pantsL:'#3b2d46'},
+ guard:{skin:'#b477b7',skinD:'#88558d',skinL:'#d094d1',hair:'#241a36',yel:'#5b3888',yelD:'#402564',blu:'#41324f',bluD:'#30233d',bluL:'#66486f',pants:'#29243d',pantsD:'#1b1a2d',pantsL:'#443656'},
+ kicker:{skin:'#b779c4',skinD:'#895694',skinL:'#d692db',hair:'#2a1848',yel:'#b9388b',yelD:'#8c2b6f',blu:'#30455d',bluD:'#203446',bluL:'#3b6079',pants:'#29334a',pantsD:'#1c2233',pantsL:'#3c4660'},
+ brute:{skin:'#ab6bac',skinD:'#814a8a',skinL:'#cb89c7',hair:'#241630',yel:'#d3938e',yelD:'#8b555f',blu:'#513347',bluD:'#352336',bluL:'#654056',pants:'#332439',pantsD:'#271d2b',pantsL:'#473148'}
+};
+function buildParts(variant) {
+  if (variant && /^raudra:/.test(variant)) {
+    var n=variant.split(':')[1], enemy=!!RAUDRA_ENEMY_PAL[n], pal=enemy?RAUDRA_ENEMY_PAL[n]:RAUDRA_HERO_PAL[n];
+    if (pal) {
+      var prev={}, k;for(k in pal){prev[k]=C[k];C[k]=h(pal[k]);}
+      TH=enemy;
+      try{return buildPartsRaw();}finally{TH=false;for(k in prev)C[k]=prev[k];}
+    }
+  }
+
+  if (variant === 'kid') {
+    var saveK = {}, kk; for (kk in KID_PAL) { saveK[kk] = C[kk]; C[kk] = KID_PAL[kk]; }
+    KID = true;
+    try { return buildPartsRaw(); } finally { KID = false; for (kk in saveK) C[kk] = saveK[kk]; }
+  }
+  if (/^maa/.test(variant || '')) {
+    var saveM = {}, km, MP = {}; for (km in MAA_PAL) MP[km] = MAA_PAL[km]; if (variant === 'maa:young') for (km in MAA_YOUNG) MP[km] = MAA_YOUNG[km];
+    for (km in MP) { saveM[km] = C[km]; C[km] = MP[km]; }
+    TH = true; MAA = true;
+    try { return buildPartsRaw(); } finally { TH = false; MAA = false; for (km in saveM) C[km] = saveM[km]; }
+  }
+  if (variant === 'home') {
+    var saveH = {}, kh; for (kh in HOME_PAL) { saveH[kh] = C[kh]; C[kh] = HOME_PAL[kh]; }
+    HOME = true;
+    try { return buildPartsRaw(); } finally { HOME = false; for (kh in saveH) C[kh] = saveH[kh]; }
+  }
+  if (/^thug/.test(variant || '') || variant === 'cop') {
+    var PAL = variant === 'cop' ? COP : THUG, kind = (variant || '').split(':')[1], save = {}, k;
+    if (kind && KIND_PAL[kind]) { var P2 = {}; for (k in THUG) P2[k] = THUG[k]; for (k in KIND_PAL[kind]) P2[k] = KIND_PAL[kind][k]; PAL = P2; }
+    for (k in PAL) { save[k] = C[k]; C[k] = PAL[k]; }
+    TH = true;
+    try { return buildPartsRaw(); } finally { TH = false; for (k in save) C[k] = save[k]; }
+  }
+  return buildPartsRaw();
+}
+
+function buildPartsRaw() {
+  return {
+    head: buildHead(), neck: buildNeck(), torso: buildTorso(), pelvis: buildPelvis(),
+    thighL: buildThigh(1), thighR: buildThigh(-1), shinL: buildShin(1), shinR: buildShin(-1),
+    footL: buildFoot(), footR: buildFoot(), toeL: buildToe(), toeR: buildToe(),
+    uarmL: buildUpperArm(1), uarmR: buildUpperArm(-1), farmL: buildForearm(1), farmR: buildForearm(-1),
+    handL: buildHand(1), handR: buildHand(-1), hair0: buildHairSeg(0), hair1: buildHairSeg(1), hair2: buildHairSeg(2), beard: buildBeard(), guitar: buildGuitar()
+  };
+}
+
+module.exports = { buildParts: buildParts, COLORS: C };
+
+};
+defs["view/herorig"]=function(module,exports,require){
+/* view: the hero as a jointed rig. Meshes are built once and shared; each rig is a tree of pivots.
+   Pose conventions (see data/poses.js): positive arm/leg pitch swings forward, positive knee bends the shin back,
+   positive elbow bends the hand forward, positive ankle lifts the toes. Lead = A, rear = B. */
+'use strict';
+
+var SK = require('../data/skeleton');
+var vg = require('./voxgrid');
+var hv = require('./herovox');
+
+var D2R = Math.PI / 180, VS = SK.VS;
+var caches = {};
+/* R1: every part of a rig is one skinned mesh (one draw call) instead of ~20 separate meshes. ?skin=0 in the address brings the old per-part meshes back, to compare. */
+var SKIN = !(typeof location !== 'undefined' && /[#?&]skin=0/.test(location.href || ''));
+
+function getTemplate(variant) {
+  variant = variant || 'hero';
+  if (caches[variant]) return caches[variant];
+  var parts = hv.buildParts(variant === 'hero' ? undefined : variant), geo = {}, stats = { parts: {}, voxels: 0, triangles: 0, bytes: 0 }, seed = 0;
+  Object.keys(parts).forEach(function (name) {
+    var p = parts[name], a = vg.meshGrid(p.grid, p.pivot, VS, { jitter: 0.05, seed: ++seed });
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(a.positions, 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(a.normals, 3));
+    g.setAttribute('color', new THREE.BufferAttribute(a.colors, 3));
+    g.setIndex(new THREE.BufferAttribute(a.indices, 1));
+    g.computeBoundingSphere();
+    geo[name] = g;
+    stats.parts[name] = { voxels: a.voxels, triangles: a.triangles };
+    stats.voxels += a.voxels; stats.triangles += a.triangles; stats.bytes += a.bytes;
+  });
+  var face = null;
+  if (/^thug/.test(variant)) {                                   /* where the eyes and mouth sit on the head grid, so lids and blood can be laid over them */
+    var hg = parts.head.grid; face = { pivot: parts.head.pivot, fzL: vg.frontZ(hg, 3, 7), fzR: vg.frontZ(hg, 7, 7), fzM: vg.frontZ(hg, 5, 2) };
+  }
+  caches[variant] = { geo: geo, stats: stats, face: face, mat: new THREE.MeshLambertMaterial({ vertexColors: true }) };
+  return caches[variant];
+}
+
+function createHeroRig(variant) {
+  var T = getTemplate(variant), root = new THREE.Group(), body = new THREE.Group(), joints = [], meshes = [], skinParts = [];
+  root.add(body);
+  function G(parent, pos, name) {
+    var g = SKIN ? new THREE.Bone() : new THREE.Group(); g.position.set(pos[0] * VS, pos[1] * VS, pos[2] * VS); parent.add(g);
+    joints.push({ name: name, obj: g, parent: parent }); return g;
+  }
+  function M(parent, name) {
+    if (SKIN && name !== 'guitar') {                                   /* joins the one skinned mesh built after the joints exist (hidden thug parts are left out) */
+      if (!(((/^thug/.test(variant || '') || /^raudra:(street|guard|kicker|brute)$/.test(variant || '')) || variant === 'cop' || /^maa/.test(variant || '') || variant === 'kid') && /^(hair|beard)/.test(name))) skinParts.push({ name: name, joint: parent });
+      return null;
+    }
+    var m = new THREE.Mesh(T.geo[name], T.mat); parent.add(m); meshes.push(m); return m;
+  }
+
+  var hips = G(body, [0, SK.hipY, 0], 'hips'); M(hips, 'pelvis');
+  var spine = G(hips, SK.spine, 'spine'); M(spine, 'torso');
+  var neck = G(spine, SK.neck, 'neck'); M(neck, 'neck');
+  var head = G(neck, SK.head, 'head'); M(head, 'head');
+  var hair = [], sp = head;
+  for (var i = 0; i < 3; i++) { var sg = G(sp, i === 0 ? SK.hair : SK.hairStep, 'hair' + i); M(sg, 'hair' + i); hair.push(sg); sp = sg; }
+  var beard = G(head, SK.beard, 'beard'); M(beard, 'beard');
+  var guitar = new THREE.Group(); body.add(guitar); var guitarMesh = M(guitar, 'guitar');
+  if ((/^thug/.test(variant || '') || /^raudra:(street|guard|kicker|brute)$/.test(variant || '')) || variant === 'cop' || /^maa/.test(variant || '') || variant === 'kid') { guitar.visible = false; beard.visible = false; hair.forEach(function (h0) { h0.visible = false; }); }
+
+  /* a hurt thug's face: eyelids that squeeze shut, an open mouth, a smear of blood. Thin boxes just proud of the face, hidden until needed. */
+  var faceFx = null;
+  if ((/^thug/.test(variant || '') || /^raudra:(street|guard|kicker|brute)$/.test(variant || '')) && T.face) {
+    var F = T.face;
+    var fbox = function (w, h, d, col, gx, gy, gz) {
+      var m = new THREE.Mesh(new THREE.BoxGeometry(w * VS, h * VS, d * VS), new THREE.MeshLambertMaterial({ color: col }));
+      m.position.set((gx - F.pivot.x) * VS, (gy - F.pivot.y) * VS, (gz - F.pivot.z) * VS); m.visible = false; head.add(m); return m;
+    };
+    faceFx = {
+      lids: [fbox(3.2, 1.3, 0.7, 0x946238, 3.5, 7.5, F.fzL + 1.3), fbox(3.2, 1.3, 0.7, 0x946238, 7.5, 7.5, F.fzR + 1.3),
+             fbox(3.0, 0.32, 0.9, 0x1c1612, 3.5, 7.15, F.fzL + 1.45), fbox(3.0, 0.32, 0.9, 0x1c1612, 7.5, 7.15, F.fzR + 1.45)],
+      mouth: fbox(3.2, 1.2, 0.6, 0x3a0d0d, 5.5, 2.5, F.fzM + 1.3),
+      blood: fbox(0.9, 2.0, 0.4, 0xa3151a, 5.8, 1.3, F.fzM + 1.25),
+      mouthPt: [(5.5 - F.pivot.x) * VS, (2.3 - F.pivot.y) * VS, (F.fzM + 1.2 - F.pivot.z) * VS], eyePt: [(5.5 - F.pivot.x) * VS, (7.5 - F.pivot.y) * VS, (F.fzL + 1.2 - F.pivot.z) * VS]
+    };
+  }
+
+  var side = {};
+  [['L', 1], ['R', -1]].forEach(function (d) {
+    var S = d[0], s = d[1], o = { s: s };
+    o.shoulder = G(spine, [s * SK.shoulder[0], SK.shoulder[1], 0], 'shoulder' + S); M(o.shoulder, 'uarm' + S);
+    o.elbow = G(o.shoulder, SK.elbow, 'elbow' + S); M(o.elbow, 'farm' + S);
+    o.wrist = G(o.elbow, SK.wrist, 'wrist' + S); M(o.wrist, 'hand' + S);
+    o.hip = G(hips, [s * SK.hip[0], 0, 0], 'hip' + S); M(o.hip, 'thigh' + S);
+    o.knee = G(o.hip, SK.knee, 'knee' + S); M(o.knee, 'shin' + S);
+    o.ankle = G(o.knee, SK.ankle, 'ankle' + S); M(o.ankle, 'foot' + S);
+    o.toe = G(o.ankle, SK.toe, 'toe' + S); M(o.toe, 'toe' + S);
+    side[S] = o;
+  });
+
+  if (SKIN) buildSkin();
+  function buildSkin() {
+    root.updateMatrixWorld(true);
+    var bones = joints.map(function (j) { return j.obj; });
+    if (!T.skin) {                                                     /* the merged geometry is the same for every rig of this variant: build it once */
+      var vc = 0, ic = 0, i, n;
+      skinParts.forEach(function (p) { var g = T.geo[p.name]; vc += g.attributes.position.count; ic += g.index.count; });
+      var pos = new Float32Array(vc * 3), nor = new Float32Array(vc * 3), col = new Float32Array(vc * 3), idx = new Uint32Array(ic), si = new Uint16Array(vc * 4), sw = new Float32Array(vc * 4);
+      var vo = 0, io = 0, v = new THREE.Vector3(), nm = new THREE.Matrix3();
+      skinParts.forEach(function (p) {
+        var g = T.geo[p.name], pa = g.attributes.position, na = g.attributes.normal, ca = g.attributes.color, m = p.joint.matrixWorld, bi = bones.indexOf(p.joint);
+        nm.getNormalMatrix(m); n = pa.count;
+        for (i = 0; i < n; i++) {
+          v.fromBufferAttribute(pa, i).applyMatrix4(m); pos[(vo + i) * 3] = v.x; pos[(vo + i) * 3 + 1] = v.y; pos[(vo + i) * 3 + 2] = v.z;
+          v.fromBufferAttribute(na, i).applyMatrix3(nm).normalize(); nor[(vo + i) * 3] = v.x; nor[(vo + i) * 3 + 1] = v.y; nor[(vo + i) * 3 + 2] = v.z;
+          col[(vo + i) * 3] = ca.getX(i); col[(vo + i) * 3 + 1] = ca.getY(i); col[(vo + i) * 3 + 2] = ca.getZ(i);
+          si[(vo + i) * 4] = bi; sw[(vo + i) * 4] = 1;
+        }
+        for (i = 0; i < g.index.count; i++) idx[io + i] = g.index.getX(i) + vo;
+        vo += n; io += g.index.count;
+      });
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      geo.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); geo.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); geo.setIndex(new THREE.BufferAttribute(idx, 1));
+      T.skin = { geo: geo, mat: new THREE.MeshLambertMaterial({ vertexColors: true, skinning: true }) };
+    }
+    var sm = new THREE.SkinnedMesh(T.skin.geo, T.skin.mat); sm.frustumCulled = false; root.add(sm);
+    sm.bind(new THREE.Skeleton(bones)); meshes.push(sm);
+  }
+
+  /* points that must not sink below the floor: [object, local voxel point, radius in voxels] */
+  var samples = [];
+  ['L', 'R'].forEach(function (S) {
+    var o = side[S];
+    samples.push([o.ankle, [0, -3, -2.2], 0], [o.ankle, [0, -3, 5.0], 0], [o.toe, [0, -1, 3.8], 0]);
+    samples.push([o.elbow, [0, 0, -2.5], 2.4], [o.wrist, [0, -3.5, 0], 2.8], [o.knee, [0, 0, 0], 3.8]);
+  });
+  samples.push([head, [0, 7, 1], 5.2], [spine, [0, 12, -5], 1], [hips, [0, 2, -5], 2]);
+  var tmp = new THREE.Vector3(), inv = new THREE.Matrix4();
+
+  function setE(obj, x, y, z, order) { obj.rotation.set(x * D2R, y * D2R, z * D2R, order); }
+
+  /* ---- guitar: slung on the back (on = 0) or held in front in spine space (on = 1); both hands follow it with arm IK ---- */
+  var gQ = new THREE.Quaternion(), gQ2 = new THREE.Quaternion(), gE = new THREE.Euler(), gP = new THREE.Vector3(), gP2 = new THREE.Vector3(),
+      gAxis = new THREE.Vector3(), gM = new THREE.Matrix4(), v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), v4 = new THREE.Vector3(),
+      q1 = new THREE.Quaternion(), q2 = new THREE.Quaternion(), mB = new THREE.Matrix4(), UP = new THREE.Vector3(0, 1, 0);
+  var L1 = Math.abs(SK.elbow[1]) * VS, L2 = Math.abs(SK.wrist[1]) * VS;
+  function guitarPoint(yLocal, xLocal, zLocal, out) { return out.set(xLocal * VS, yLocal * VS, zLocal * VS).applyMatrix4(guitar.matrixWorld); }
+  function ikArm(o, target, hand, w, fkQ) {
+    /* analytic two-bone solve; elbow bends toward the pole (forward and slightly outward) */
+    o.shoulder.getWorldPosition(v1); v2.copy(target).sub(v1);
+    var dist = Math.min(L1 + L2 - 0.004, Math.max(0.06, v2.length())); v2.normalize();
+    var cosA = (L1 * L1 + dist * dist - L2 * L2) / (2 * L1 * dist), sinA = Math.sqrt(Math.max(0, 1 - cosA * cosA));
+    var cosE = (L1 * L1 + L2 * L2 - dist * dist) / (2 * L1 * L2), bend = Math.PI - Math.acos(Math.max(-1, Math.min(1, cosE)));
+    v3.set(o.s * 0.35, -0.25, 0.8).transformDirection(body.matrixWorld);                         /* pole in world */
+    v3.addScaledVector(v2, -v3.dot(v2)).normalize();
+    v4.copy(v2).multiplyScalar(cosA * L1).addScaledVector(v3, sinA * L1).add(v1);                /* elbow position */
+    var u = v4.clone().sub(v1).normalize(), f = target.clone().sub(v4).normalize();
+    var zl = f.clone().addScaledVector(u, -f.dot(u)); if (zl.lengthSq() < 1e-6) zl.copy(v3); zl.normalize();
+    var yl = u.clone().negate(), xl = new THREE.Vector3().crossVectors(yl, zl).normalize();
+    mB.makeBasis(xl, yl, zl); q1.setFromRotationMatrix(mB);
+    o.shoulder.parent.getWorldQuaternion(q2); q1.premultiply(q2.invert());
+    o.shoulder.quaternion.slerp(q1, w);
+    var fk = new THREE.Quaternion().copy(o.elbow.quaternion);
+    o.elbow.quaternion.setFromEuler(gE.set(-bend, 0, 0, 'XYZ')); if (w < 1) o.elbow.quaternion.copy(fk.slerp(o.elbow.quaternion, w));
+  }
+  function applyGuitar(pose) {
+    function P(k, d) { return pose[k] === undefined ? d : pose[k]; }
+    var on = Math.max(0, Math.min(1, P('gtr.on', 0))), bk = SK.guitarBack;
+    var px = bk.pos[0], py = bk.pos[1], pz = bk.pos[2];
+    gE.set(bk.rot[0] * D2R, bk.rot[1] * D2R, bk.rot[2] * D2R, 'YXZ'); gQ.setFromEuler(gE);
+    if (on > 0) {
+      gE.set(P('gtr.rx', 0) * D2R, P('gtr.ry', 0) * D2R, P('gtr.rz', 0) * D2R, 'YXZ'); gQ2.setFromEuler(gE);
+      /* held transform is given by where the neck grip sits; the pivot follows from the rotation */
+      gAxis.set(0, P('gtr.gy', 14) * VS, 0).applyQuaternion(gQ2);
+      gP2.set(P('gtr.px', 0) * VS - gAxis.x, P('gtr.py', 0) * VS - gAxis.y, P('gtr.pz', 0) * VS - gAxis.z);
+      gP.set(px * VS, py * VS, pz * VS).lerp(gP2, on); gQ.slerp(gQ2, on);
+    } else gP.set(px * VS, py * VS, pz * VS);
+    spine.updateMatrixWorld(true);
+    guitar.position.copy(gP).applyMatrix4(spine.matrixWorld); body.worldToLocal(guitar.position);
+    spine.getWorldQuaternion(q1); body.getWorldQuaternion(q2);
+    guitar.quaternion.copy(q2.invert().multiply(q1).multiply(gQ));
+    guitar.updateMatrixWorld(true);
+    if (on > 0.001) {
+      var A = opts_ref.southpaw ? side.R : side.L, B = opts_ref.southpaw ? side.L : side.R;
+      [[A, P('gtr.ya', 14)], [B, P('gtr.yb', 8)]].forEach(function (d) {
+        var tgt = guitarPoint(d[1] + 2.5, 0, 1.2, new THREE.Vector3()); ikArm(d[0], tgt, null, on);
+      });
+    }
+  }
+  var opts_ref = {};
+
+  function applyPose(pose, opts) {
+    opts = opts || {}; opts_ref = opts;
+    function P(k) { return pose[k] || 0; }
+    hips.position.set(P('hip.x'), SK.hipY * VS + P('hip.y'), P('hip.z'));
+    setE(hips, P('hip.rx'), P('hip.ry'), -P('hip.rz'), 'YXZ');
+    setE(spine, P('spine.rx'), P('spine.ry'), -P('spine.rz'), 'YXZ');
+    setE(neck, P('neck.rx'), P('neck.ry'), -P('neck.rz'), 'YXZ');
+    setE(head, P('head.rx'), P('head.ry'), -P('head.rz'), 'YXZ');
+    var A = opts.southpaw ? side.R : side.L, B = opts.southpaw ? side.L : side.R;
+    [[A, 'armA', 'legA'], [B, 'armB', 'legB']].forEach(function (d) {
+      var o = d[0], a = d[1], l = d[2], s = o.s;
+      setE(o.shoulder, -P(a + '.sx'), s * P(a + '.sy'), s * P(a + '.sz'), 'ZXY');
+      setE(o.elbow, -P(a + '.e'), s * P(a + '.pr'), 0, 'XYZ');
+      setE(o.wrist, -P(a + '.w'), 0, 0, 'XYZ');
+      setE(o.hip, -P(l + '.hx'), s * P(l + '.hy'), s * P(l + '.hz'), 'ZXY');
+      setE(o.knee, P(l + '.k'), 0, 0, 'XYZ');
+      setE(o.ankle, -P(l + '.a'), 0, 0, 'XYZ');
+      setE(o.toe, -P(l + '.t'), 0, 0, 'XYZ');
+    });
+    applyGuitar(pose);
+    body.position.y = 0;
+    if (opts.plant !== false) {
+      root.updateMatrixWorld(true); inv.copy(root.matrixWorld).invert();
+      var low = 1e9;
+      for (var i = 0; i < samples.length; i++) {
+        var sm = samples[i];
+        tmp.set(sm[1][0] * VS, sm[1][1] * VS, sm[1][2] * VS).applyMatrix4(sm[0].matrixWorld).applyMatrix4(inv);
+        var y = tmp.y - sm[2] * VS; if (y < low) low = y;
+      }
+      body.position.y = -low;
+    }
+  }
+
+  function flutter(t, lift) {
+    for (var i = 0; i < hair.length; i++) {            /* long hair: lifts back in the wind of movement, sways gently at rest */
+      hair[i].rotation.x = 0.05 + lift * 0.34 + Math.sin(t * 5 - i * 0.9) * 0.08 * (0.5 + lift);
+      hair[i].rotation.z = Math.sin(t * 3.3 - i * 1.1) * 0.06 * (0.4 + lift);
+    }
+  }
+
+  /* the boy (the dream): a child's build on the same bones - a big head for his size, narrow shoulders, thin arms and legs (the caller
+     scales the whole of him to his height, about 0.62 of the man) */
+  if (variant === 'kid') { head.scale.setScalar(1.45); spine.scale.set(0.86, 1, 0.9); ['L', 'R'].forEach(function (sd) { side[sd].shoulder.scale.set(0.8, 1, 0.8); side[sd].hip.scale.set(0.82, 1, 0.82); }); }
+  return { root: root, body: body, joints: joints, meshes: meshes, parts: side, hips: hips, spine: spine, neck: neck, head: head,
+           faceFx: faceFx, applyPose: applyPose, flutter: flutter, stats: T.stats, guitar: guitar, guitarMesh: guitarMesh, guitarPoint: function (y, x, z) { guitar.updateMatrixWorld(true); return guitarPoint(y, x || 0, z || 0, new THREE.Vector3()); } };
+}
+
+/* little joint markers and bone lines, drawn on top of the model */
+function createSkeletonOverlay(rig) {
+  var g = new THREE.Group(), mats = [], items = [];
+  var dotMat = new THREE.MeshBasicMaterial({ color: 0xffd23a, depthTest: false, transparent: true }), lineMat = new THREE.LineBasicMaterial({ color: 0x4fc3ff, depthTest: false, transparent: true });
+  var dotGeo = new THREE.SphereGeometry(0.022, 8, 6);
+  rig.joints.forEach(function (j) {
+    var dot = new THREE.Mesh(dotGeo, dotMat); dot.renderOrder = 10; g.add(dot);
+    var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    var line = new THREE.Line(geo, lineMat); line.renderOrder = 9; line.frustumCulled = false; g.add(line);
+    items.push({ j: j, dot: dot, line: line });
+  });
+  var a = new THREE.Vector3(), b = new THREE.Vector3();
+  g.userData.update = function () {
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i]; it.j.obj.getWorldPosition(a); it.dot.position.copy(a);
+      it.j.parent.getWorldPosition(b);
+      var p = it.line.geometry.attributes.position; p.setXYZ(0, a.x, a.y, a.z); p.setXYZ(1, b.x, b.y, b.z); p.needsUpdate = true;
+    }
+  };
+  g.userData.dispose = function () { dotGeo.dispose(); dotMat.dispose(); lineMat.dispose(); items.forEach(function (it) { it.line.geometry.dispose(); }); };
+  return g;
+}
+
+module.exports = { createHeroRig: createHeroRig, createSkeletonOverlay: createSkeletonOverlay, getTemplate: getTemplate };
+
+};
+defs["view/posemath"]=function(module,exports,require){
+/* view: pose maths. Poses are flat objects of joint values; everything here is pure. */
+'use strict';
+
+var data = require('../data/poses');
+
+function smooth(t) { t = t < 0 ? 0 : (t > 1 ? 1 : t); return t * t * (3 - 2 * t); }
+
+function blend(a, b, t) {
+  var out = {}, k;
+  for (k in a) out[k] = a[k] * (1 - t) + (b[k] || 0) * t;
+  for (k in b) if (!(k in a)) out[k] = b[k] * t;
+  return out;
+}
+
+function copy(p) { var o = {}; for (var k in p) o[k] = p[k]; return o; }
+function named(name) { return copy(data.POSES[name] || data.POSES.stand); }
+
+/* move cur toward target at a rate (per second); returns max remaining change */
+function approach(cur, target, rate, dt) {
+  var f = 1 - Math.exp(-rate * dt), k, worst = 0, keys = {};
+  for (k in cur) keys[k] = 1; for (k in target) keys[k] = 1;
+  for (k in keys) {
+    var c = cur[k] || 0, t = target[k] || 0, d = (t - c) * f;
+    cur[k] = c + d; if (Math.abs(t - c) > worst) worst = Math.abs(t - c);
+  }
+  return worst;
+}
+
+/* standing breath and weight shift */
+function idlePose(time) {
+  var p = named('stand'), b = Math.sin(time * 2.0), s = Math.sin(time * 0.9);
+  p['spine.rx'] = 1.2 + b * 1.1; p['head.rx'] = -1 - b * 0.8; p['hip.rz'] = s * 1.0; p['spine.rz'] = -s * 1.0;
+  p['armA.sz'] += b * 1.2; p['armB.sz'] += b * 1.2; p['armA.e'] += 3 + b * 1.5; p['armB.e'] += 3 - b * 1.5;
+  return p;
+}
+
+/* Athletic gait. phase 0..1 = one full stride (two steps); amp 1 = purposeful walk, ~1.7 = jog.
+   Built from gait events rather than plain sine swings: heel strike with the leg forward, a loading dip with a
+   little knee give, a straight mid-stance, push-off through the toes, then a high-knee swing. The pelvis bobs twice
+   per stride, shifts over the planted foot and rotates against the shoulders; arms stay bent and swing with the
+   opposite leg; the head stays level. Leg A is forward at phase 0.25. */
+var TAU = Math.PI * 2;
+function bump(phi, centre, width) {
+  var d = Math.atan2(Math.sin(phi - centre), Math.cos(phi - centre)) / width;
+  return Math.exp(-d * d);
+}
+function legCycle(phi, a, out, key) {
+  var f = Math.sin(phi);                                                       /* +1 at heel strike, -1 at toe-off */
+  var load = bump(phi, Math.PI / 2 + 0.55, 0.5);                               /* weight accepted: small knee give */
+  var lift = bump(phi, 1.5 * Math.PI + 0.75, 0.75);                            /* swing: knee drives up */
+  out[key + '.hx'] = 4 + 24 * a * f + 6 * a * lift;
+  out[key + '.k'] = 5 + 13 * load + (46 + 14 * (a - 1)) * lift + 10 * bump(phi, 1.5 * Math.PI, 0.35);
+  out[key + '.a'] = 14 * bump(phi, Math.PI / 2 - 0.1, 0.4) - 26 * a * bump(phi, 1.5 * Math.PI - 0.35, 0.4) + 7 * lift;
+  out[key + '.t'] = 34 * a * bump(phi, 1.5 * Math.PI - 0.1, 0.4);
+  out[key + '.hz'] = 3 + 2 * lift;
+}
+function walkPose(phase, amp) {
+  var th = phase * TAU, a = amp || 1, p = named('stand'), s = Math.sin(th), c = Math.cos(th);
+  legCycle(th, a, p, 'legA'); legCycle(th + Math.PI, a, p, 'legB');
+  /* pelvis: bob (lowest at loading, highest at mid-stance), sway over the planted foot, rotate against the shoulders */
+  p['hip.y'] = -0.03 * a + 0.018 * a * Math.cos(2 * th - 0.4);
+  p['hip.x'] = -0.022 * a * c;
+  p['hip.ry'] = -7 * a * s; p['hip.rz'] = -3 * a * c; p['hip.rx'] = 2 + 2 * a;
+  p['spine.ry'] = 10 * a * s; p['spine.rz'] = 2.2 * a * c; p['spine.rx'] = 3 + 3.5 * a + 1.2 * Math.cos(2 * th);
+  p['neck.ry'] = -2 * a * s; p['head.ry'] = -2.5 * a * s; p['head.rx'] = -2 - 1.5 * a; p['neck.rz'] = -1.2 * a * c;
+  /* arms: opposite to the leg on the same side; elbows stay bent, more on the forward swing; shoulders held a little wide */
+  var swA = -(24 * a * s), swB = -(-24 * a * s);
+  p['armA.sx'] = swA * 1.05 + 4; p['armB.sx'] = swB * 1.05 + 4;
+  p['armA.e'] = 34 + 22 * a * Math.max(0, swA / (24 * a)) + 8 * a; p['armB.e'] = 34 + 22 * a * Math.max(0, swB / (24 * a)) + 8 * a;
+  p['armA.sz'] = 10 + 2 * a * Math.max(0, s); p['armB.sz'] = 10 + 2 * a * Math.max(0, -s);
+  p['armA.pr'] = 14; p['armB.pr'] = 14;
+  return p;
+}
+
+/* sequence: steps are [poseName, holdSeconds, blendSeconds]; returns pose at time t */
+function sequenceDuration(seq) { var d = 0; seq.steps.forEach(function (s) { d += s[1] + s[2]; }); return d; }
+function sequencePose(seq, time) {
+  var dur = sequenceDuration(seq), t = seq.loop ? time % dur : Math.min(time, dur - 1e-6), prev = named(seq.steps[seq.steps.length - 1][0]);
+  for (var i = 0; i < seq.steps.length; i++) {
+    var st = seq.steps[i], cur = named(st[0]);
+    if (t < st[2]) return blend(prev, cur, smooth(t / Math.max(1e-6, st[2])));
+    t -= st[2];
+    if (t < st[1]) return cur;
+    t -= st[1]; prev = cur;
+  }
+  return prev;
+}
+
+/* layer an overlay pose on a base with separate weights for the upper body and the lower body / hips */
+var UPPER_KEYS = /^(armA|armB|spine|neck|head|gtr)\./;
+function layer(base, over, wLower, wUpper, wArmA, wArmB) {
+  var out = copy(base), k;
+  for (k in over) {
+    var w = wLower;
+    if (UPPER_KEYS.test(k)) w = k.indexOf('armA.') === 0 && wArmA !== undefined ? wArmA : (k.indexOf('armB.') === 0 && wArmB !== undefined ? wArmB : wUpper);
+    var b = base[k] || 0, dlt = over[k] - b;
+    if (k === 'hip.ry') dlt = ((dlt + 180) % 360 + 360) % 360 - 180;           /* spins take the short way round */
+    out[k] = b + dlt * w;
+  }
+  return out;
+}
+
+/* a pose from keyframes: keys = [[u, pose], ...] with u rising 0..1; smooth between neighbours */
+function keyed(keys, u) {
+  if (u <= keys[0][0]) return copy(keys[0][1]);
+  for (var i = 0; i < keys.length - 1; i++) if (u <= keys[i + 1][0]) return blend(keys[i][1], keys[i + 1][1], smooth((u - keys[i][0]) / (keys[i + 1][0] - keys[i][0])));
+  return copy(keys[keys.length - 1][1]);
+}
+
+module.exports = { keyed: keyed, layer: layer, blend: blend, copy: copy, named: named, approach: approach, idlePose: idlePose, walkPose: walkPose,
+  sequencePose: sequencePose, sequenceDuration: sequenceDuration, smooth: smooth };
+
+};
+defs["view/moveplayer"]=function(module,exports,require){
+/* view: plays move clips from data/moves.js as poses, and chains presses into the combo string.
+   Pure maths on time; the caller feeds dt. The combat phase will drive the same clips from the tick loop. */
+'use strict';
+
+var moves = require('../data/moves');
+
+function ease(kind, t) {
+  if (kind === 'in') return t * t * t * (t * (t * 6 - 15) + 10) * 0.55 + t * t * 0.45 * t;  /* slow, building start: anticipation */
+  if (kind === 'snap') return 1 - Math.pow(1 - t, 2.4);                                      /* fast start that settles on impact */
+  return t * t * t * (t * (t * 6 - 15) + 10);                                                 /* smootherstep */
+}
+function smooth(t) { t = t < 0 ? 0 : (t > 1 ? 1 : t); return t * t * (3 - 2 * t); }
+function wrap180(a) { a = ((a + 180) % 360 + 360) % 360 - 180; return a; }
+
+/* value of joint `name` at key i. Guitar keys carry forward from the last key that sets them, other joints fall back to guard. */
+function keyValue(keys, i, name) {
+  var v = keys[i].pose[name], j;
+  if (v !== undefined) return v;
+  if (name.indexOf('gtr.') === 0) {
+    for (j = i - 1; j >= 0; j--) if (keys[j].pose[name] !== undefined) return keys[j].pose[name];
+    for (j = i + 1; j < keys.length; j++) if (keys[j].pose[name] !== undefined) return keys[j].pose[name];
+    return 0;
+  }
+  return moves.GUARD[name] === undefined ? 0 : moves.GUARD[name];
+}
+
+var NAMES = {};
+function namesFor(name) {
+  if (NAMES[name]) return NAMES[name];
+  var set = {}, k; for (k in moves.GUARD) set[k] = 1;
+  moves.MOVES[name].keys.forEach(function (ky) { for (k in ky.pose) set[k] = 1; });
+  return (NAMES[name] = Object.keys(set));
+}
+
+/* pose of move `name` at time t (seconds) */
+function clipPose(name, t) {
+  var mv = moves.MOVES[name], keys = mv.keys, i = 1, out = {};
+  if (t > mv.len) t = mv.len;
+  while (i < keys.length - 1 && t > keys[i].t) i++;
+  var a = keys[i - 1], b = keys[i], u = (t - a.t) / Math.max(1e-6, b.t - a.t);
+  u = u < 0 ? 0 : (u > 1 ? 1 : u);
+  var e = ease(b.ease, u), names = namesFor(name);
+  for (var n = 0; n < names.length; n++) {
+    var k = names[n], va = keyValue(keys, i - 1, k), vb = keyValue(keys, i, k);
+    out[k] = va + (vb - va) * e;
+  }
+  out['hip.ry'] = wrap180(out['hip.ry']);        /* full spins come back to the same stance */
+  return out;
+}
+
+function mixPose(a, b, t) { var o = {}, k; for (k in a) o[k] = a[k] + ((k in b ? b[k] : a[k]) - a[k]) * t; for (k in b) if (!(k in a)) o[k] = b[k] * t; return o; }
+
+var FADE_IN = 0.2, FADE_OUT = 0.5, CHAIN_FADE = 0.3, LEAD_IN = 0.1, LINGER = 0.9, LINGER_FADE = 0.55;
+var guardPose = function () { var o = {}, k; for (k in moves.GUARD) o[k] = moves.GUARD[k]; return o; };
+
+/* playback speed of the attacker's clip around contact: a barely-there catch on impact, then the limb snaps back faster than it went out.
+   (A long freeze reads as lag, not weight; the weight comes from the target's reaction and the quick recovery.) */
+var CATCH = { jab: 0.02, cross: 0.025, hook: 0.03, hookB: 0.03, uppercut: 0.035, elbow: 0.03, knee: 0.03, kick: 0.035, axeKick: 0.035, roundhouse: 0.035, counterCross: 0.03 };
+function impactSpeed(P) {
+  var mv = moves.MOVES[P.move], c = CATCH[P.move];
+  if (!c || mv.counter || P.comboIdx < 0 && P.move !== 'counterCross') return 1;
+  if (P.comboIdx === P.seq.length - 1) c *= 1.8;
+  var ht = (mv.hits || [mv.hit])[0], d = P.t - ht;
+  if (d >= 0 && d < c) return 0.4;
+  if (d >= c && d < c + 0.12) return 1.3;
+  return 1;
+}
+
+function createMovePlayer(opts) {
+  var rand = (opts && opts.rand) || Math.random;
+  var P = { lead: 0, linger: 0, lingerT: 0, move: null, t: 0, comboIdx: -1, queued: false, sinceEnd: 99, hitListeners: [], fxListeners: [], from: null, fromT: 1, last: null, fired: {},
+            seq: moves.COMBO, lastW: { lo: 0, up: 0, a: 0, b: 0 }, startW: { lo: 0, up: 0, a: 0, b: 0 }, fromStance: false };
+  function out(pose, lo, up, a, b, move) { P.lastW = { lo: lo, up: up, a: a, b: b }; return { pose: pose, wLower: lo, wUpper: up, wArmA: a, wArmB: b, move: move }; }
+  function start(name, idx, keepFrom, lead) {
+    P.fromStance = false; P.lead = lead || 0; P.linger = 0; P.lingerT = 0; P.move = name; P.t = 0; P.comboIdx = idx; P.queued = false; P.fired = {};
+    P.from = keepFrom || null; P.fromT = 0;
+    if (!P.lead) P.startW = P.lastW;                                  /* weights continue from whatever was last on screen: no jumps */
+  }
+  P.press = function () {
+    if (!P.move) {
+      var inGuard = P.linger > 0, i = (P.sinceEnd < 0.9 && P.comboIdx >= 0 && P.comboIdx < P.seq.length - 1) ? P.comboIdx + 1 : 0;
+      if (i === 0) P.seq = moves.makeString(rand);      /* a different string each time a fight starts */
+      start(P.seq[i], i, null, inGuard ? 0 : LEAD_IN); P.fromStance = inGuard; return;
+    }
+    if (P.comboIdx >= 0 && P.t >= moves.MOVES[P.move].cancel * 0.55) P.queued = true;
+  };
+  P.play = function (name) {
+    var cont = P.move ? P.last : null;                                    /* interrupting a move: carry its pose into the new one */
+    start(name, -1, cont, cont ? 0 : (moves.MOVES[name].counter ? 0.2 : 0));
+  };
+  P.cancel = function () { P.move = null; P.linger = 0; P.last = null; P.from = null; P.sinceEnd = 99; P.lastW = { lo: 0, up: 0, a: 0, b: 0 }; };
+  P.time = function () { return P.move ? P.t : 0; };
+  P.length = function () { return P.move ? moves.MOVES[P.move].len : 0; };
+  P.current = function () { return P.move && P.lead <= 0 ? P.move : null; };
+  function lingerFrame(dt) {
+    P.linger -= dt; P.lingerT += dt;
+    var up = smooth(Math.min(1, P.linger / LINGER_FADE)), lo = smooth(Math.max(0, 1 - P.lingerT / 0.5));
+    return out(guardPose(), lo, up, up, up, null);
+  }
+  P.update = function (dt) {
+    if (!P.move) {
+      P.sinceEnd += dt;
+      return P.linger > 0 ? lingerFrame(dt) : (P.lastW = { lo: 0, up: 0, a: 0, b: 0 }, null);
+    }
+    if (P.lead > 0) {                                        /* settle into the ready stance before the first strike; arms stay down */
+      P.lead -= dt;
+      var lw = smooth(1 - Math.max(0, P.lead) / LEAD_IN);
+      var r = out(guardPose(), lw * 0.7, lw, 0, 0, null);
+      if (P.lead <= 0) P.startW = P.lastW;
+      return r;
+    }
+    var mv = moves.MOVES[P.move];
+    dt *= impactSpeed(P);                                    /* the fist snaps in, bites into the target, then lets go */
+    P.t += dt; P.fromT += dt;
+    (mv.hits || [mv.hit]).forEach(function (ht, hi) { if (!P.fired['h' + hi] && P.t >= ht) { P.fired['h' + hi] = 1; var hl = (mv.hits || [mv.hit]).length, lastHit = mv.counter ? hi === hl - 1 : (P.comboIdx >= 0 ? P.comboIdx === P.seq.length - 1 : !mv.bike); P.hitListeners.forEach(function (f) { f(P.move, hi, lastHit); }); } });
+    (mv.fx || []).forEach(function (fx, fi) { if (!P.fired['f' + fi] && P.t >= fx.t) { P.fired['f' + fi] = 1; P.fxListeners.forEach(function (f) { f(fx.kind, P.move); }); } });
+    if (P.queued && P.t >= mv.cancel && P.comboIdx >= 0 && P.comboIdx < P.seq.length - 1) {   /* chain: carry the current pose into the next move */
+      start(P.seq[P.comboIdx + 1], P.comboIdx + 1, P.last); P.t = dt;
+    }
+    mv = moves.MOVES[P.move];
+    if (P.t >= mv.len) {
+      P.move = null; P.sinceEnd = 0; P.last = null;
+      if (mv.counter) { P.lastW = { lo: 0, up: 0, a: 0, b: 0 }; return null; }
+      P.linger = LINGER + LINGER_FADE; P.lingerT = 0;
+      return lingerFrame(dt);
+    }
+    var pose = clipPose(P.move, P.t);
+    if (P.from && P.fromT < CHAIN_FADE) pose = mixPose(P.from, pose, ease('io', P.fromT / CHAIN_FADE));
+    P.last = pose;
+    var sw = P.startW, up = function (s0, dur) { return s0 + (1 - s0) * smooth(P.t / dur); };
+    if (mv.counter) {
+      var wc = Math.min(1, (mv.len - P.t) / 0.45), c = smooth(Math.max(0, wc));
+      return out(pose, up(sw.lo, 0.25) * c, up(sw.up, 0.25) * c, up(sw.a, 0.25) * c, up(sw.b, 0.25) * c, P.move);
+    }
+    var fresh = !P.fromStance && P.comboIdx === 0 && !P.from;
+    return out(pose, up(sw.lo, FADE_IN), up(sw.up, 0.2), up(sw.a, fresh ? 0.1 : 0.12), up(sw.b, fresh ? 0.22 : 0.12), P.move);
+  };
+  P.onHit = function (f) { P.hitListeners.push(f); };
+  P.onFx = function (f) { P.fxListeners.push(f); };
+  P.active = function () { return !!P.move; };
+  P.guarding = function () { return P.linger > 0; };
+  return P;
+}
+
+module.exports = { clipPose: clipPose, createMovePlayer: createMovePlayer, COMBO: moves.COMBO, wrap180: wrap180 };
+
+};
+R.Toofan = { rig:requireModule('view/herorig'), pose:requireModule('view/posemath'), poses:requireModule('data/poses'), moves:requireModule('data/moves'), player:requireModule('view/moveplayer'), skeleton:requireModule('data/skeleton') };
+})(window.RAUDRA=window.RAUDRA||{});
+
+/* RAUDRA V0.2 — Toofan's detailed skinned 2.5cm rig and authored, whole-body combat keyframes.
+ * Replaces the prototype's procedural cylinder limbs and simple sine-attack animations.
+ * Each character shares the animation grammar, but has its own sculpt, timing and personality.
+ */
+(function(R){'use strict';
+const T=THREE,PI=Math.PI,TF=R.Toofan;
+const poses=TF.pose,moves=TF.moves,rigmod=TF.rig;
+const map={jab:'jab',cross:'cross',hook:'hook',upper:'uppercut',elbow:'elbow',knee:'knee',kick:'kick',roundhouse:'roundhouse',sweep:'axeKick',heavy:'uppercut',counter:'counterCross'};
+const idleOrigin=TF.poses.POSES.stand;
+function create(def,isEnemy=false){
+  let variant=isEnemy?'raudra:'+def.id:'raudra:'+def.id;
+  const rig=rigmod.createHeroRig(variant),root=rig.root;
+  // Original sculpt is roughly human-sized; slightly heroic proportions fit the existing arena.
+  let size=(def.scale||1)*1.21;root.scale.setScalar(size);
+  rig.guitar.visible=false;
+  const hero=!isEnemy;
+  if(hero){
+    if(def.id==='titan'){
+      rig.spine.scale.set(1.22,1.01,1.14);
+      rig.parts.L.shoulder.scale.set(1.18,1.03,1.18);rig.parts.R.shoulder.scale.set(1.18,1.03,1.18);
+      rig.parts.L.hip.scale.set(1.05,1,1.05);rig.parts.R.hip.scale.set(1.05,1,1.05);
+      for(let j of rig.joints)if(j.name==='hair1'||j.name==='hair2')j.obj.scale.set(.8,.48,.8);
+    }else if(def.id==='maverick'){
+      rig.spine.scale.set(.91,1.05,.95);
+      for(let j of rig.joints)if(j.name.startsWith('hair'))j.obj.scale.set(.84,.52,.89);
+      rig.parts.L.hip.scale.set(.9,1,.9);rig.parts.R.hip.scale.set(.9,1,.9);
+    }else{
+      rig.spine.scale.set(1.06,1.05,1.05);
+      rig.parts.L.shoulder.scale.set(1.07,1.04,1.07);rig.parts.R.shoulder.scale.set(1.07,1.04,1.07);
+    }
+  }else if(def.id==='brute'){
+    rig.spine.scale.set(1.14,1.08,1.13);
+    rig.parts.L.shoulder.scale.set(1.11,1,1.11);rig.parts.R.shoulder.scale.set(1.11,1,1.11);
+  }
+  const shadow=new T.Mesh(new T.CircleGeometry(.68,24),new T.MeshBasicMaterial({color:0x07090f,transparent:true,opacity:.28,depthWrite:false}));shadow.rotation.x=-PI/2;shadow.position.y=.027;root.add(shadow);
+  const glow=new T.Mesh(new T.TorusGeometry(.56,.016,5,48),new T.MeshBasicMaterial({color:def.color||'#a83fce',transparent:true,opacity:.63,depthWrite:false}));glow.rotation.x=PI/2;glow.position.y=.045;glow.visible=false;root.add(glow);
+  const f={root,rig,shadow,glow,def,isEnemy,state:'idle',action:null,actionT:0,actionLen:0,face:0,time:0,health:isEnemy?100:160,maxHp:isEnemy?100:160,stun:0,down:0,guarding:false,vel:new T.Vector3(),x:0,z:0,h:0,vertical:0,knock:0,dead:false,attackCooldown:0,telegraph:0,threat:false,invuln:0,combo:0,comboT:0,moving:0,pose:{},gait:0};
+  rig.applyPose(TF.poses.POSES.stand,{plant:false});
+  return f;
+}
+function eased(a,b,t){return a+(b-a)*t}
+function moveSample(type,ratio,style){
+ let m=map[type]||'jab';
+ if(type==='heavy'&&style==='primal')m='hookB';
+ if(type==='heavy'&&style==='swift')m='roundhouse';
+ if(type==='heavy'&&style==='mass')m='uppercut';
+ if(type==='counter'&&style==='primal')m='elbow';
+ if(type==='counter'&&style==='mass')m='uppercut';
+ let dat=moves.MOVES[m];if(!dat)return TF.poses.POSES.guard;
+ return TF.player.clipPose(m,Math.min(1,ratio)*dat.len);
+}
+function blendPose(a,b,k){const out={},keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);for(const name of keys)out[name]=(a[name]||0)*(1-k)+(b[name]||0)*k;return out}
+function animate(f,dt,time){
+ f.time+=dt;
+ const A=f.action,kind=A?(A.type||A):null,u=A?Math.max(0,Math.min(1,f.actionT/Math.max(.001,f.actionLen))):0;
+ const walk=Math.min(1,Math.max(0,f.moving||0));
+ let desired;
+ if(kind){
+   if(kind==='dodge')desired=blendPose(TF.poses.POSES.crouch,TF.poses.POSES.guard,.25);
+   else if(kind==='fall')desired=TF.poses.POSES.down;
+   else if(kind==='hit')desired=TF.poses.POSES.hurt;
+   else if(kind==='finisher'){
+     // Three distinct multi-phase performance pieces using Toofan-authored motion clips.
+     let stages=f.def.style==='mass'?['uppercut','hookB','uppercut']:
+       f.def.style==='swift'?['roundhouse','cross','axeKick']:['hook','elbow','uppercut'];
+     let phase=Math.min(2,Math.floor(u*3)),m=stages[phase];
+     desired=TF.player.clipPose(m,(u*3-phase)*moves.MOVES[m].len);
+     desired['hip.ry']=(desired['hip.ry']||0)+(f.def.style==='swift'?28:12)*Math.sin(Math.PI*u);
+   }else desired=moveSample(kind,u,f.def.style);
+ }else if(f.down>0){desired=TF.poses.POSES.down}
+ else if(f.guarding){desired=TF.poses.POSES.block}
+ else if(walk>.08){f.gait+=dt*(1.27+f.def.walk*.34)*Math.max(.4,walk);desired=poses.walkPose(f.gait,Math.min(1.6,.65+walk*.7));
+   desired=blendPose(desired,TF.poses.POSES.guard,f.isEnemy?.15:.25);
+ }else{
+   let breath=poses.idlePose(time+f.x*.37);
+   let poised=TF.poses.POSES.guard;
+   desired=blendPose(breath,poised,f.isEnemy?.57:f.def.style==='swift'?.42:f.def.style==='mass'?.35:.49);
+ }
+ // Secondary style offsets keep the same move recognizable yet unique per hero.
+ if(f.def.style==='mass'){
+   desired['spine.rx']=(desired['spine.rx']||0)-2;
+   desired['armA.sz']=(desired['armA.sz']||0)+6;
+   desired['armB.sz']=(desired['armB.sz']||0)+6;
+ }else if(f.def.style==='primal'){
+   desired['spine.rx']=(desired['spine.rx']||0)+7;
+   desired['hip.rx']=(desired['hip.rx']||0)+2;
+ }else if(f.def.style==='swift'){
+   desired['hip.ry']=(desired['hip.ry']||0)+4;
+   desired['head.ry']=(desired['head.ry']||0)-3;
+ }
+ if(f.stun>0&&!kind)desired['spine.rx']=(desired['spine.rx']||0)+Math.sin(f.time*28)*Math.min(11,f.stun*34);
+ const k=1-Math.exp(-dt*(kind?32:walk>.08?19:9));
+ f.pose=blendPose(f.pose,desired,k);
+ f.rig.applyPose(f.pose,{plant:!f.isEnemy,southpaw:false});
+ f.rig.flutter(f.time,f.moving||0);
+ const forwardHit=(kind==='hit'?.12:0);
+ const h=f.h+forwardHit;
+ f.root.position.set(f.x,h,f.z);
+ f.root.rotation.y=f.face;
+ const tilt=kind==='fall'||f.down>0?1.25:0;
+ f.root.rotation.x=eased(f.root.rotation.x,tilt,Math.min(1,dt*13));
+ f.shadow.material.opacity=Math.max(.1,.27-Math.min(.17,f.h*.075));
+ f.shadow.scale.setScalar(1+f.h*.09);
+ f.glow.visible=!f.isEnemy&&f.rage>=75;
+}
+R.buildCharacter=create;
+R.animateCharacter=animate;
+R.ToofanModelReady=true;
+})(window.RAUDRA=window.RAUDRA||{});
 </script><script>(function(R){'use strict';
 const T=THREE,PI=Math.PI;function rnd(a){return (Math.sin(a*127.1+78.233)*43758.5453)%1}function rr(a){return Math.abs(rnd(a))}
 function addBox(parent,x,y,z,w,h,d,c,metal=0){let m=new T.Mesh(new T.BoxGeometry(w,h,d),R.mat(c,metal));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
@@ -196,10 +1864,10 @@ function txtTexture(text,fg='#ffe0aa',bg='#20182f'){let c=document.createElement
 function makeArena(scene){
  const root=new T.Group();scene.add(root);const sprites=[],neons=[],props=[],frags=[];let t=0,intensity=0,seed=1;
  scene.background=new T.Color('#0b0c18');scene.fog=new T.FogExp2(0x141127,.034);
- const hemi=new T.HemisphereLight(0x779aff,0x231428,.68);root.add(hemi);
- const sun=new T.DirectionalLight(0xffbf93,1.55);sun.position.set(-5,12,6);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-15;sun.shadow.camera.right=15;sun.shadow.camera.top=14;sun.shadow.camera.bottom=-14;sun.shadow.camera.near=.5;sun.shadow.camera.far=39;sun.shadow.bias=-.0008;root.add(sun);
+ const hemi=new T.HemisphereLight(0x779aff,0x231428,.41);root.add(hemi);
+ const sun=new T.DirectionalLight(0xffbf93,.76);sun.position.set(-5,12,6);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-15;sun.shadow.camera.right=15;sun.shadow.camera.top=14;sun.shadow.camera.bottom=-14;sun.shadow.camera.near=.5;sun.shadow.camera.far=39;sun.shadow.bias=-.0008;root.add(sun);
  const lights=[];
- for(let L of [[-5,4,-3,'#ff396f',3.25],[5,5,0,'#35aaff',3.25],[-2,5,-7,'#ff982b',2.8],[3,7,-7,'#7a47ff',2.6]]){
+ for(let L of [[-3.3,5.2,1,'#ff235f',5.1],[3.4,4.9,1.7,'#289eff',5.3],[-2.1,5.3,-6,'#ff922d',3.9],[3,6,-5.5,'#8047ff',3.6]]){
  let p=new T.PointLight(L[3],L[4],12,2);p.position.set(L[0],L[1],L[2]);root.add(p);lights.push(p);
  }
  const skyUniforms={uTime:{value:0},uInt:{value:0},uShift:{value:0}};
@@ -291,7 +1959,7 @@ function makeArena(scene){
  function reset(){for(let p of props){p.broken=false;p.obj.visible=true}for(let f of frags)root.remove(f.mesh);frags.length=0}
  function update(dt,now,vibe){t+=dt;intensity+=(vibe-intensity)*(1-Math.exp(-dt*2.8));skyUniforms.uTime.value=t;skyUniforms.uInt.value=intensity;floorUni.uTime.value=t;floorUni.uInt.value=intensity;
   mandala.rotation.z=t*(.02+intensity*.10);mandala.scale.setScalar(1+intensity*.08);mandala.children.forEach((m,i)=>{if(m.material&&m.material.opacity!==undefined)m.material.opacity=(.17+intensity*.12)*(i<5?1:1)});
-  lights[0].intensity=2.9+intensity*2.0;lights[1].intensity=2.8+intensity*1.9;
+  lights[0].intensity=4.6+intensity*1.8;lights[1].intensity=4.7+intensity*1.6;
   for(let i=0;i<sprites.length;i++)sprites[i].material.opacity=(.40+.15*Math.sin(t*2+i))*(.9+intensity*.3);
   for(let i=0;i<rainCount;i++){let d=drops[i];d.y-=dt*(7+i%5);if(d.y<.15)d.y=12;let n=i*6;rainPos[n]=d.x;rainPos[n+1]=d.y;rainPos[n+2]=d.z;rainPos[n+3]=d.x-.10;rainPos[n+4]=d.y-.40;rainPos[n+5]=d.z-.06}
   rainGeo.attributes.position.needsUpdate=true;rain.material.opacity=.10+intensity*.08;
@@ -302,40 +1970,104 @@ function makeArena(scene){
 }
 R.makeArena=makeArena;
 })(window.RAUDRA=window.RAUDRA||{});
-</script><script>(function(R){'use strict';const T=THREE;
-function createFX(scene,arena){const max=650,pos=new Float32Array(max*3),col=new Float32Array(max*3),sizes=new Float32Array(max),items=[];
- const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.setAttribute('color',new T.BufferAttribute(col,3));geo.setDrawRange(0,max);
- const points=new T.Points(geo,new T.PointsMaterial({size:.12,vertexColors:true,transparent:true,opacity:.93,depthWrite:false,blending:T.AdditiveBlending,sizeAttenuation:true}));points.frustumCulled=false;scene.add(points);
- const color=new T.Color();let cursor=0;
+</script><script>/* RAUDRA V0.2: directional voxel combat particles, graphic impact discs, dust and
+   single-Context original mass-action rhythm/SFX inspired by Toofan's layered thumps.
+   No remote sounds, no licensed samples, no CDNs. */
+(function(R){'use strict';const T=THREE;
+function createFX(scene,arena){
+ const max=780,pos=new Float32Array(max*3),col=new Float32Array(max*3),items=[];
+ const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.setAttribute('color',new T.BufferAttribute(col,3));geo.setDrawRange(0,0);
+ const points=new T.Points(geo,new T.PointsMaterial({size:.205,vertexColors:true,transparent:true,opacity:1,depthWrite:false,blending:T.AdditiveBlending,sizeAttenuation:true}));points.frustumCulled=false;points.renderOrder=12;scene.add(points);
+ let cursor=0;const color=new T.Color();
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+ const context=canvas.getContext('2d');const gradient=context.createRadialGradient(64,64,1,64,64,64);
+ gradient.addColorStop(0,'rgba(255,255,255,1)');gradient.addColorStop(.1,'rgba(255,255,255,.96)');gradient.addColorStop(.20,'rgba(255,255,255,.42)');gradient.addColorStop(.5,'rgba(255,255,255,.12)');gradient.addColorStop(1,'rgba(255,255,255,0)');context.fillStyle=gradient;context.fillRect(0,0,128,128);
+ const tex=new T.CanvasTexture(canvas);const discs=[];
+ for(let i=0;i<22;i++){
+  const m=new T.Sprite(new T.SpriteMaterial({map:tex,color:0xffffff,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending}));m.scale.setScalar(.001);m.visible=false;m.renderOrder=16;scene.add(m);discs.push({m,life:0,duration:.24,size:1});
+ }
+ const impactGeo=new T.TorusGeometry(.54,.036,5,48);const arcs=[];
+ for(let i=0;i<18;i++){let m=new T.Mesh(impactGeo,new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending}));m.visible=false;m.renderOrder=13;scene.add(m);arcs.push({m,life:0,duration:.35,scale:1})}
+ const chips=[];const chipGeo=new T.BoxGeometry(.075,.095,.08);
+ for(let i=0;i<100;i++){
+  let m=new T.Mesh(chipGeo,new T.MeshBasicMaterial({color:0xffa36e,transparent:true,opacity:0,depthWrite:false}));m.visible=false;scene.add(m);chips.push({m,life:0,vx:0,vy:0,vz:0,spin:0});
+ }
+ let dc=0,ac=0,cc=0;
+ function disc(x,y,z,c,force){let d=discs[dc++%discs.length];d.life=d.duration=.17+force*.07;d.size=.48+force*1.7;d.m.position.set(x,y,z);d.m.material.color.set(c);d.m.material.opacity=0.83;d.m.visible=true;d.m.scale.setScalar(d.size*.3)}
+ function arc(x,y,z,c,force){let a=arcs[ac++%arcs.length];a.life=a.duration=.30+force*.07;a.scale=.55+force*.67;a.m.position.set(x,y,z);a.m.material.color.set(c);a.m.rotation.set(Math.random()*.7,(Math.random()-.5)*.5,Math.random()*6.28);a.m.material.opacity=.66;a.m.scale.setScalar(.15);a.m.visible=true}
  function burst(x,y,z,c,n=28,force=1,shape='blast'){
-  color.set(c);for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,e=Math.random()*Math.PI*.75;let p={x,y,z,vx:Math.cos(a)*force*(1.4+Math.random()*3)*Math.cos(e),vy:(shape==='dust'?.6:1.4)+Math.random()*3.4*force,vz:Math.sin(a)*force*(1.4+Math.random()*3)*Math.cos(e),life:.35+Math.random()*.4,max:.75,c:color.clone(),g:shape==='dust'?-1.6:-6};if(items.length<max)items.push(p);else items[cursor++%max]=p}
-  arena.blast(x,z,c,force*.8);
+  color.set(c);const big=force>1.25;
+  for(let i=0;i<n;i++){
+   const angle=Math.random()*6.283,speed=.55+Math.random()*4.9*force;
+   let p={x,y,z,vx:Math.cos(angle)*speed,vy:(shape==='dust'?.26:1.3)+Math.random()*3.8*force,vz:Math.sin(angle)*speed,life:.24+Math.random()*.62,max:.9,c:color.clone(),g:shape==='dust'?-2.5:-10};
+   if(items.length<max)items.push(p);else items[cursor++%max]=p;
+  }
+  disc(x,y,z,c,force);arc(x,y,z,c,force);if(big)arc(x,y,z,'#ffffff',force*.73);
+  for(let i=0;i<(big?13:5);i++){
+    let q=chips[cc++%chips.length],a=Math.random()*6.28,k=force*(.55+Math.random()*2.6);
+    q.life=.28+Math.random()*.72;q.vx=Math.cos(a)*k;q.vy=Math.random()*3+force*1.2;q.vz=Math.sin(a)*k;q.spin=(Math.random()-.5)*16;
+    q.m.position.set(x,y,z);q.m.material.color.set(i%3===0?'#ffffff':c);q.m.material.opacity=1;q.m.scale.setScalar(.7+Math.random()*2);q.m.visible=true;
+  }
+  arena.blast(x,z,c,force*.82);
  }
- function update(dt){for(let i=0;i<items.length;i++){let p=items[i];p.life-=dt;if(p.life>0){p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;pos[3*i]=p.x;pos[3*i+1]=p.y;pos[3*i+2]=p.z;let fade=Math.max(.01,p.life/p.max);col[3*i]=p.c.r*fade;col[3*i+1]=p.c.g*fade;col[3*i+2]=p.c.b*fade}else{pos[3*i+1]=-100;col[3*i]=0;col[3*i+1]=0;col[3*i+2]=0}}
- geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;geo.setDrawRange(0,Math.min(max,items.length))}
- return {burst,update,clear(){items.length=0}}}
-function createAudio(){let ctx=null,master=null,musicBus=null,sfxBus=null,started=false,mute=false,musicOn=true,sfxOn=true,lastBeat=-1;
- function unlock(){if(!ctx){let Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;ctx=new Audio();master=ctx.createGain();master.gain.value=.73;master.connect(ctx.destination);musicBus=ctx.createGain();musicBus.gain.value=.20;musicBus.connect(master);sfxBus=ctx.createGain();sfxBus.gain.value=.80;sfxBus.connect(master)}ctx.resume().catch(()=>{});started=true}
- function tone(freq,dur,kind='sine',vol=.2,start=0,toFreq=null,bus=null){if(!ctx||mute)return;let t=ctx.currentTime+start,o=ctx.createOscillator(),g=ctx.createGain();o.type=kind;o.frequency.setValueAtTime(Math.max(20,freq),t);if(toFreq)o.frequency.exponentialRampToValueAtTime(Math.max(20,toFreq),t+dur);g.gain.setValueAtTime(Math.max(.0001,vol),t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(bus||sfxBus);o.start(t);o.stop(t+dur+.02)}
- function noise(dur,volume=0.15,freq=800,start=0){if(!ctx||mute)return;const length=Math.floor(ctx.sampleRate*dur),buffer=ctx.createBuffer(1,length,ctx.sampleRate),a=buffer.getChannelData(0);for(let i=0;i<length;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/length,.5);let src=ctx.createBufferSource();src.buffer=buffer;let filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=freq;let g=ctx.createGain();g.gain.value=volume;src.connect(filter);filter.connect(g);g.connect(sfxBus);src.start(ctx.currentTime+start)}
- function hit(type='jab',power=1){unlock();const heavy=type==='heavy'||type==='upper'||type==='finisher';tone(heavy?90:150,heavy?.25:.13,'triangle',.24*power,0,heavy?39:77);noise(heavy?.23:.12,.12*power,heavy?520:1300);tone(380,.09,'sawtooth',.05*power,0,85);if(heavy){tone(51,.28,'sine',.4*power,0,31);tone(780,.07,'triangle',.06,0,180)}}
- function guard(perfect){unlock();tone(perfect?850:460,.19,'triangle',.11,0,perfect?240:160);noise(.07,.08,2400);if(perfect)tone(1260,.33,'sine',.085,0,600)}
- function hurt(){unlock();tone(112,.15,'sawtooth',.12,0,58);noise(.07,.07,290)}
- function finisher(){unlock();tone(58,.60,'sawtooth',.43,0,26);noise(.55,.24,1800);for(let i=0;i<4;i++)tone(180+i*95,.31,'triangle',.12,i*.09,400+i*100)}
- function menu(){unlock();tone(410,.17,'sine',.1);tone(620,.24,'sine',.055,.08)}
- function beat(time,mode,intensity){if(!ctx||mute||!musicOn||mode==='paused')return;const beat=Math.floor(time*2.67);if(beat===lastBeat)return;lastBeat=beat;const k=beat%16;if(mode==='fight'){
-  if(k%4===0){tone(64,.18,'triangle',.30,0,31,musicBus);noise(.07,.045,230,0)}
-  if(k%4===2){noise(.12,.12+intensity*.05,1300);tone(145,.06,'triangle',.11,0,70,musicBus)}
-  if(k%2===1){noise(.034,.032,5500,0)}
-  if(k%8===4)tone(92,.27,'sawtooth',.06,0,62,musicBus);
-  if(intensity>.35&&k%4===1)tone([220,261,196,330][Math.floor(beat/4)%4],.18,'sine',.032,0,120,musicBus);
- }else if(k%4===0){tone([110,130.81,146.83,98][Math.floor(beat/4)%4],.55,'sine',.046,0,null,musicBus);tone(220,.7,'sine',.035,0,190,musicBus)}
+ function update(dt){
+  for(let i=0;i<items.length;i++){
+   let p=items[i];p.life-=dt;if(p.life>0){p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;pos[3*i]=p.x;pos[3*i+1]=p.y;pos[3*i+2]=p.z;let a=Math.max(0,p.life/p.max);col[3*i]=p.c.r*a;col[3*i+1]=p.c.g*a;col[3*i+2]=p.c.b*a}else{pos[3*i+1]=-100;col[3*i]=0;col[3*i+1]=0;col[3*i+2]=0}
+  }
+  geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;geo.setDrawRange(0,Math.min(max,items.length));
+  for(let d of discs){if(d.life<=0)continue;d.life-=dt;let u=1-Math.max(0,d.life)/d.duration;d.m.material.opacity=Math.pow(1-u,1.7)*.87;d.m.scale.setScalar(d.size*(.28+.88*u));d.m.visible=d.life>0}
+  for(let a of arcs){if(a.life<=0)continue;a.life-=dt;let u=1-Math.max(0,a.life)/a.duration;a.m.material.opacity=(1-u)*.77;a.m.scale.setScalar(a.scale*(.2+2.6*u));a.m.visible=a.life>0;a.m.rotation.z+=dt*2.8}
+  for(let c of chips){if(c.life<=0)continue;c.life-=dt;c.vy-=10.6*dt;c.m.position.x+=c.vx*dt;c.m.position.y=Math.max(.06,c.m.position.y+c.vy*dt);c.m.position.z+=c.vz*dt;c.m.rotation.x+=dt*c.spin;c.m.rotation.y+=dt*c.spin*.7;c.m.material.opacity=Math.min(1,c.life*2.5);c.m.visible=c.life>0}
  }
- return {unlock,hit,guard,hurt,finisher,menu,beat,setMusic(v){musicOn=v},setSfx(v){sfxOn=v;if(sfxBus)sfxBus.gain.value=v?.8:0},setMute(v){mute=v},get available(){return !!ctx}}}
+ function clear(){items.length=0;for(let d of discs){d.life=0;d.m.visible=false}for(let a of arcs){a.life=0;a.m.visible=false}for(let c of chips){c.life=0;c.m.visible=false}}
+ return {burst,update,clear};
+}
+function createAudio(){
+ let ctx=null,master=null,musicBus=null,sfxBus=null,noiseBuffer=null,musicOn=true,sfxOn=true,lastStep=-1;
+ function unlock(){if(!ctx){const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;try{ctx=new Audio();master=ctx.createGain();master.gain.value=.76;master.connect(ctx.destination);
+  musicBus=ctx.createGain();musicBus.gain.value=.34;musicBus.connect(master);sfxBus=ctx.createGain();sfxBus.gain.value=.88;sfxBus.connect(master);
+  noiseBuffer=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.7),ctx.sampleRate);let data=noiseBuffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;
+ }catch(e){ctx=null;return}}
+ if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+ }
+ function thump(f0,f1,dur,vol=.3,at=0,bus){if(!ctx)return;let t=ctx.currentTime+at,osc=ctx.createOscillator(),g=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(f0*(.96+Math.random()*.08),t);osc.frequency.exponentialRampToValueAtTime(Math.max(19,f1),t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol),t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+dur);osc.connect(g);g.connect(bus||sfxBus);osc.start(t);osc.stop(t+dur+.02)}
+ function spray(type,f0,f1,dur,vol=.2,at=0,bus){if(!ctx)return;const t=ctx.currentTime+at,source=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();source.buffer=noiseBuffer;source.loop=true;f.type=type;f.Q.value=.85;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(Math.max(45,f1),t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol),t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+dur);source.connect(f);f.connect(g);g.connect(bus||sfxBus);source.start(t,Math.random()*.4);source.stop(t+dur+.01)}
+ function tone(f0,f1,dur,vol=.1,shape='triangle',at=0,bus){if(!ctx)return;const t=ctx.currentTime+at,osc=ctx.createOscillator(),g=ctx.createGain();osc.type=shape;osc.frequency.setValueAtTime(f0,t);osc.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.007);g.gain.exponentialRampToValueAtTime(.0001,t+dur);osc.connect(g);g.connect(bus||sfxBus);osc.start(t);osc.stop(t+dur+.03)}
+ function hit(type='jab',power=1){if(!ctx||!sfxOn)return;let p=Math.max(.5,Math.min(1.4,power)),k=['kick','roundhouse','sweep','knee'].includes(type),big=['heavy','upper','counter','finisher'].includes(type);
+  if(k){thump(122,38,.23,.83*p);spray('bandpass',1250,250,.13,.36*p);spray('highpass',3700,1200,.044,.22*p,.008)}
+  else if(big){thump(117,25,.34,1.06*p);spray('lowpass',2250,90,.27,.59*p);spray('highpass',3400,620,.055,.44*p);thump(66,19,.61,.43*p,.035)}
+  else if(type==='elbow'){thump(160,50,.16,.68*p);spray('bandpass',2000,500,.075,.47*p)}
+  else{thump(151,52,.16,.67*p);spray('lowpass',1900,420,.08,.42*p);spray('highpass',3650,1700,.025,.20*p,.007)}
+ }
+ function whoosh(type='jab',power=1){if(!ctx||!sfxOn)return;let kick=['kick','roundhouse','heavy','upper'].includes(type);spray('bandpass',kick?370:650,kick?1700:1400,kick?.21:.115,(kick?.24:.14)*power)}
+ function guard(perfect){if(!ctx||!sfxOn)return;thump(perfect?190:90,perfect?75:48,perfect?.24:.14,perfect?.6:.4);spray('bandpass',perfect?2800:730,perfect?550:300,perfect?.14:.09,perfect?.45:.31);if(perfect)tone(980,380,.24,.12,'sine',.025)}
+ function hurt(){if(!ctx||!sfxOn)return;thump(96,36,.22,.52);spray('lowpass',700,180,.18,.23)}
+ function land(){if(!ctx||!sfxOn)return;thump(75,25,.4,.87);spray('lowpass',1400,160,.24,.41)}
+ function finisher(){if(!ctx||!sfxOn)return;thump(92,18,.93,1.20);thump(160,28,.58,.85,.07);spray('lowpass',2500,100,.83,.65);spray('highpass',3900,650,.14,.55,.015);for(let i=0;i<4;i++)tone(165+i*135,65,.25,.13,'sawtooth',i*.07)}
+ function menu(){if(!ctx||!sfxOn)return;tone(430,220,.19,.10,'sine');tone(620,420,.25,.052,'triangle',.075)}
+ function step(){if(!ctx||!sfxOn)return;thump(98,48,.085,.17);spray('bandpass',650,280,.06,.08)}
+ function beat(time,mode,intensity){if(!ctx||!musicOn)return;let b=Math.floor(time*8.52);if(b===lastStep)return;lastStep=b;let k=b%16;
+  if(mode==='fight'){
+   if(k===0||k===8||k===5||k===13){thump(90,28,.22,.65,0,musicBus);spray('lowpass',330,90,.12,.08,0,musicBus)}
+   if(k===4||k===12){spray('bandpass',2400,670,.16,.44,0,musicBus);thump(225,90,.095,.22,0,musicBus)}
+   if(k%2===0)spray('highpass',7200,4400,.041,.13,0,musicBus);
+   if(k%4===3)spray('highpass',6200,3400,.035,.08,0,musicBus);
+   if(k===0||k===6||k===8||k===12){let seq=[55,65.41,73.42,49];const f=seq[(Math.floor(b/16)+Math.floor(k/4))%4];tone(f,f*.91,.28,.30,'sawtooth',0,musicBus);tone(f*.5,f*.45,.35,.30,'sine',0,musicBus)}
+   if(intensity>.4&&(k===3||k===11))tone([220,261.63,196,329.63][Math.floor(b/16)%4],170,.20,.06,'triangle',0,musicBus);
+  }else{
+   if(k===0){let f=[110,130.81,146.83,98][Math.floor(b/16)%4];tone(f,f*.93,1.0,.17,'sine',0,musicBus);tone(f*2.02,f*2,.9,.13,'triangle',0,musicBus);spray('bandpass',450,160,.4,.07,0,musicBus)}
+   if(k===8){thump(67,30,.27,.25,0,musicBus);spray('lowpass',850,160,.23,.07,0,musicBus)}
+  }
+ }
+ // Avoid audio unexpectedly continuing when the tab is hidden.
+ document.addEventListener('visibilitychange',()=>{if(!ctx)return;if(document.hidden)ctx.suspend().catch(()=>{});else ctx.resume().catch(()=>{})});
+ try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_e){}
+ return {unlock,hit,whoosh,guard,hurt,land,finisher,menu,step,beat,setMusic(v){musicOn=!!v;if(musicBus)musicBus.gain.value=v?.34:0},setSfx(v){sfxOn=!!v;if(sfxBus)sfxBus.gain.value=v?.88:0},get available(){return !!ctx},get running(){return ctx?.state==='running'}};
+}
 R.createFX=createFX;R.createAudio=createAudio;
 })(window.RAUDRA=window.RAUDRA||{});
 </script><script>(function(R){'use strict';const T=THREE,PI=Math.PI;
-const moves={jab:{len:.42,hit:.18,pow:14,range:1.62,knock:.66},cross:{len:.51,hit:.26,pow:18,range:1.70,knock:1},hook:{len:.64,hit:.34,pow:23,range:1.6,knock:1.55},upper:{len:.79,hit:.40,pow:28,range:1.57,knock:1.8,air:1.25},kick:{len:.69,hit:.35,pow:23,range:2.05,knock:1.7},roundhouse:{len:.84,hit:.47,pow:30,range:2.15,knock:2.1},knee:{len:.51,hit:.29,pow:17,range:1.52,knock:.85},elbow:{len:.48,hit:.24,pow:20,range:1.45,knock:1.2},heavy:{len:.90,hit:.55,pow:35,range:1.88,knock:2.55,air:.6},sweep:{len:.79,hit:.43,pow:25,range:1.90,knock:1.7},counter:{len:.55,hit:.21,pow:29,range:1.65,knock:2.25},finisher:{len:1.42,hit:.76,pow:170,range:3.4,knock:5.8,air:2.8},dodge:{len:.39,hit:1},hit:{len:.36,hit:1}};
+const moves={jab:{len:.36,hit:.119,pow:14,range:1.62,knock:.66},cross:{len:.44,hit:.17,pow:18,range:1.70,knock:1},hook:{len:.48,hit:.175,pow:23,range:1.6,knock:1.55},upper:{len:.55,hit:.22,pow:28,range:1.57,knock:1.8,air:1.25},kick:{len:.58,hit:.225,pow:23,range:2.05,knock:1.7},roundhouse:{len:.75,hit:.275,pow:30,range:2.15,knock:2.1},knee:{len:.53,hit:.20,pow:17,range:1.52,knock:.85},elbow:{len:.45,hit:.158,pow:20,range:1.45,knock:1.2},heavy:{len:.76,hit:.33,pow:35,range:1.88,knock:2.55,air:.6},sweep:{len:.79,hit:.33,pow:25,range:1.90,knock:1.7},counter:{len:.48,hit:.165,pow:29,range:1.65,knock:2.25},finisher:{len:1.52,hit:.86,pow:170,range:3.4,knock:5.8,air:2.8},dodge:{len:.39,hit:1},hit:{len:.36,hit:1}};
 const patterns={primal:['jab','hook','elbow','kick','hook','knee','upper','roundhouse'],swift:['jab','cross','kick','roundhouse','jab','sweep','counter','cross'],mass:['cross','hook','heavy','upper','hook','kick','cross','heavy']};
 function angleTo(a,b){return Math.atan2(b.x-a.x,b.z-a.z)}function wrap(a){return Math.atan2(Math.sin(a),Math.cos(a))}function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function d2(a,b){return Math.hypot(b.x-a.x,b.z-a.z)}
 function makeMark(){const c=document.createElement('canvas');c.width=128;c.height=128;let x=c.getContext('2d');x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='#ff5688';x.shadowBlur=22;x.font='900 100px Impact,Arial Black,sans-serif';x.fillText('!',64,64);return new T.CanvasTexture(c)}
@@ -351,7 +2083,7 @@ function createCombat(scene,arena,fx,audio,hooks){
   e.kind=def.id;e.index=i;e.ai='approach';e.attackCooldown=1.4+i*.37;e.invuln=.7;e.rage=0;e.warn=new T.Sprite(warningMat.clone());e.warn.scale.set(.48,.58,1);e.warn.visible=false;scene.add(e.warn);scene.add(e.root);enemies.push(e);
  });timer=0}
  function removeEnemy(e){e.dead=true;scene.remove(e.root);scene.remove(e.warn)}
- function startAction(f,type,target){let m=moves[type]||moves.jab;f.action={type,hand:type==='jab'||type==='cross'?(f.combo%2?0:1):1,hit:false,target,move:m};f.actionT=0;f.actionLen=m.len/(f.def.attack||1);f.state='attack';f.moving=0;if(target)f.face=angleTo(f,target)}
+ function startAction(f,type,target){let m=moves[type]||moves.jab;f.action={type,hand:type==='jab'||type==='cross'?(f.combo%2?0:1):1,hit:false,target,move:m};f.actionT=0;f.actionLen=m.len/(f.def.attack||1);f.state='attack';f.moving=0;if(target)f.faceTarget=angleTo(f,target);if(!f.isEnemy&&type!=='hit'&&type!=='fall'&&type!=='dodge')audio.whoosh(type,type==='heavy'?1.2:.75)}
  function targetFor(reach=3){let options=enemies.filter(e=>!e.dead&&e.down<=0&&e.health>0&&d2(e,p)<reach);if(!options.length)return null;let input=hooks.input();let inputLen=Math.hypot(input.mx,input.my),dx=inputLen>.17?input.mx:Math.sin(p.face),dz=inputLen>.17?input.my:Math.cos(p.face);let best=null,bestScore=-1e9;
  for(let e of options){let dist=d2(e,p),dot=((e.x-p.x)*dx+(e.z-p.z)*dz)/Math.max(.1,dist),score=dot*(inputLen>.17?3.1:1.2)-dist*.62+(e.threat?1.0:0);if(score>bestScore){bestScore=score;best=e}}
  return best}
@@ -363,7 +2095,7 @@ function createCombat(scene,arena,fx,audio,hooks){
  function tryBlock(){if(phase!=='fight'||p.health<=0)return false;p.lastBlockAt=time;
  const input=hooks.input();let at=targetFor(3.0);
  if(input.attack&&p.rage>=100)return finisher();
- let threats=enemies.filter(e=>!e.dead&&(e.ai==='windup'||e.ai==='strike')&&d2(e,p)<3.2&&e.kind!=='brute').sort((a,b)=>d2(a,p)-d2(b,p));
+ let threats=enemies.filter(e=>!e.dead&&(e.ai==='strike'||(e.ai==='windup'&&e.telegraph<=.37))&&d2(e,p)<3.2&&e.kind!=='brute').sort((a,b)=>d2(a,p)-d2(b,p));
  if(threats.length){let enemy=threats[0];p.queued=null;p.action=null;startAction(p,'counter',enemy);p.invuln=.62;enemy.ai='stunned';enemy.stun=1.4;enemy.warn.visible=false;enemy.action=null;enemy.threat=false;hooks.onCounter&&hooks.onCounter('PERFECT COUNTER');audio.guard(true);fx.burst(enemy.x,1.45,enemy.z,'#76e5ff',30,1.15);p.rage=clamp(p.rage+26,0,100);mod=Math.max(mod,.6);freeze=.065;return true}
  if(Math.hypot(input.mx,input.my)>.25){startAction(p,'dodge',null);p.invuln=.37;p.dodge={x:input.mx,z:input.my,time:.28};audio.guard(false);return true}
  p.guarding=true;audio.guard(false);return true}
@@ -372,7 +2104,8 @@ function createCombat(scene,arena,fx,audio,hooks){
  function resolveHit(actor,target,type){if(!target||target.dead||target.health<=0)return;let m=moves[type]||moves.jab;const range=m.range*(actor.def.scale||1);let dist=d2(actor,target);if(dist>range+.68)return;
  let angle=angleTo(actor,target),aim=Math.cos(wrap(angle-actor.face));if(aim<-.12)return;
  let power=(m.pow||15)*(actor.def.power||1);if(!actor.isEnemy&&type==='counter')power*=1.15;
- if(target.guarding&&type!=='heavy'&&type!=='finisher')power*=.35;
+ if(target.guarding&&type!=='heavy'&&type!=='finisher'&&type!=='upper'){power*=.23;fx.burst(target.x,1.38,target.z,'#76aaff',16,.45);audio.guard(false)}
+ if(target.guarding&&['heavy','upper','finisher'].includes(type)){target.guarding=false;target.stun=Math.max(target.stun,1.12);target.ai='stunned';fx.burst(target.x,1.5,target.z,'#ffd18b',38,1.4);audio.guard(true);hooks.onCounter&&hooks.onCounter('GUARD SHATTER')}
  target.health=Math.max(0,target.health-power);target.stun=.22+(m.knock||.5)*.10;target.invuln=.20;
  let dirx=(target.x-actor.x)/(dist||1),dirz=(target.z-actor.z)/(dist||1);
  let impulse=(m.knock||1)*(actor.def.power||1)*(target.kind==='brute'?.50:1);target.vel.x+=dirx*impulse*2.2;target.vel.z+=dirz*impulse*2.2;
@@ -380,13 +2113,13 @@ function createCombat(scene,arena,fx,audio,hooks){
  if(target.health<=0){target.down=1.9;target.ai='down';target.vertical=Math.max(target.vertical,(m.air||.35)*1.8);target.vel.x+=dirx*1.8;target.vel.z+=dirz*1.8;target.action={type:'fall',hit:true};target.actionT=.16;target.actionLen=.7;target.invuln=2.5;hitId++}
  else{target.action={type:'hit',hit:true};target.actionT=0;target.actionLen=.33}
  const clr=actor.isEnemy?'#ff668b':actor.def.color,heavy=['hook','upper','heavy','roundhouse','finisher','counter'].includes(type);
- fx.burst(target.x,1.3+(m.air?.18:0),target.z,clr,heavy?49:23,heavy?1.36:.75);arena.destroyAt(target.x,target.z,heavy?1.2:.65);
+ fx.burst(target.x,1.3+(m.air?.18:0),target.z,clr,heavy?49:23,heavy?1.36:.75);arena.destroyAt(target.x,target.z,heavy?1.2:.65);if(target.health<=0||type==='heavy'||type==='upper')audio.land();
  audio.hit(type,(actor.def.power||1));hooks.onHit&&hooks.onHit({type,heavy,x:target.x,z:target.z,actor});
  if(!actor.isEnemy){p.combo++;p.comboT=3.1;p.rage=clamp(p.rage+(heavy?21:13)+(type==='counter'?7:0),0,100);mod=Math.max(mod,heavy?.64:.31);hooks.onScore&&hooks.onScore(p.combo,p.rage)}
  else{p.combo=0;p.comboT=0;hooks.onHurt&&hooks.onHurt(power)}
  freeze=Math.max(freeze,heavy?.092:.041);
  }
- function updateActions(f,dt){if(!f.action)return;f.actionT+=dt;let a=f.action,m=a.move||moves[a.type];if(m&&!a.hit&&f.actionT>=m.hit/(f.def.attack||1)){
+ function updateActions(f,dt){if(!f.action)return;if(f.faceTarget!==undefined){f.face+=wrap(f.faceTarget-f.face)*Math.min(1,dt*28);}f.actionT+=dt;let a=f.action,m=a.move||moves[a.type];if(m&&!a.hit&&f.actionT>=m.hit/(f.def.attack||1)){
  a.hit=true;if(a.type==='finisher'){
   let target=a.target;if(target&&!target.dead){target.health=Math.max(0,target.health-180);target.down=2.3;target.ai='down';target.action={type:'fall',hit:true};target.actionT=.10;target.actionLen=.8;target.vertical=p.def.style==='mass'?6.0:p.def.style==='swift'?1.8:3.4;let ang=angleTo(p,target)+(p.def.style==='swift'?.7:0);let velocity=p.def.style==='swift'?12:10;target.vel.x=Math.sin(ang)*velocity;target.vel.z=Math.cos(ang)*velocity;fx.burst(target.x,1.8,target.z,p.def.color,p.def.style==='mass'?120:92,p.def.style==='mass'?2.7:2.25);arena.destroyAt(target.x,target.z,2.8);audio.hit('finisher',1.4);freeze=.13;hitId++;}
   for(let e of enemies){if(e!==a.target&&!e.dead&&d2(e,p)<3.15){e.stun=1.3;e.vel.x+=(e.x-p.x)*.75;e.vel.z+=(e.z-p.z)*.75;e.health=Math.max(1,e.health-22)}}
@@ -400,8 +2133,8 @@ function createCombat(scene,arena,fx,audio,hooks){
  function enemyAttack(e){if(e.dead||e.down>0)return;let type=e.kind==='kicker'?'kick':e.kind==='brute'?'heavy':Math.random()<.2?'hook':'jab';let target=p;startAction(e,type,target);e.ai='strike';e.warn.visible=false;e.threat=false;}
  function damagePlayerIfStrike(e){if(!e.action||e.action.hit||e.ai!=='strike')return;let a=e.action,m=a.move||moves.jab;if(e.actionT+(1/60)<m.hit/(e.def.attack||1))return;
  a.hit=true;const dist=d2(p,e);if(dist>m.range+0.35||p.invuln>0||p.down>0)return;
- if(p.guarding){p.health=Math.max(0,p.health-2.5);p.rage=clamp(p.rage+3,0,100);audio.guard(false);fx.burst(p.x,1.25,p.z,'#61bafe',16,.5);p.stun=.055;return}
- const damage=(e.kind==='brute'?28:e.kind==='guard'?14:e.kind==='kicker'?13:11);p.health=Math.max(0,p.health-damage);p.stun=.28;p.vel.x+=(p.x-e.x)/dist*3.6;p.vel.z+=(p.z-e.z)/dist*3.6;p.action={type:'hit',hit:true};p.actionT=0;p.actionLen=.38;p.combo=0;p.comboT=0;p.rage=Math.max(0,p.rage-8);fx.burst(p.x,1.35,p.z,'#ff5278',32,1);audio.hurt();hooks.onHurt&&hooks.onHurt(damage);freeze=.065;
+ if(p.guarding&&e.kind!=='brute'){p.health=Math.max(0,p.health-2.5);p.rage=clamp(p.rage+3,0,100);audio.guard(false);fx.burst(p.x,1.25,p.z,'#61bafe',16,.5);p.stun=.055;return}
+ const damage=(e.kind==='brute'?28:e.kind==='guard'?14:e.kind==='kicker'?13:11);p.health=Math.max(0,p.health-damage);p.stun=.28;p.vel.x+=(p.x-e.x)/Math.max(.1,dist)*3.6;p.vel.z+=(p.z-e.z)/Math.max(.1,dist)*3.6;p.action={type:'hit',hit:true};p.actionT=0;p.actionLen=.38;p.combo=0;p.comboT=0;p.rage=Math.max(0,p.rage-8);fx.burst(p.x,1.35,p.z,'#ff5278',32,1);audio.hurt();hooks.onHurt&&hooks.onHurt(damage);freeze=.065;
  }
  function update(dt,input){if(phase!=='fight')return;time+=dt;
  if(freeze>0){freeze-=dt;return}
@@ -413,7 +2146,7 @@ function createCombat(scene,arena,fx,audio,hooks){
  const mot=Math.min(1,Math.hypot(input.mx,input.my));p.moving=0;
  if(p.dodge&&p.dodge.time>0){p.dodge.time-=dt;p.x+=p.dodge.x*dt*9.8;p.z+=p.dodge.z*dt*9.8}
  else if(mot>.1&&p.stun<=0&&p.down<=0&&(!p.action||p.action.type==='hit'||p.actionT>p.actionLen*.71)&&!p.guarding){
-  let speed=p.def.walk*(p.action?.type==='hit'?.25:1);p.x+=input.mx/mot*dt*speed*mot;p.z+=input.my/mot*dt*speed*mot;p.moving=mot;
+  let speed=p.def.walk*(p.action?.type==='hit'?.25:1);p.x+=input.mx/mot*dt*speed*mot;p.z+=input.my/mot*dt*speed*mot;p.moving=mot;p.footstep=(p.footstep||0)+dt;if(p.footstep>.39){p.footstep=0;audio.step()}
   if(!p.action)p.face+=wrap(Math.atan2(input.mx,input.my)-p.face)*Math.min(1,dt*9)
  }
  p.x=clamp(p.x,-7.20,7.20);p.z=clamp(p.z,-5.55,5.75);
@@ -423,6 +2156,9 @@ function createCombat(scene,arena,fx,audio,hooks){
   if(e.down>0){e.down-=dt;e.moving=0;if(e.down<=0){removeEnemy(e);continue}}
   if(e.ai==='stunned'&&e.stun<=0){e.ai='recover';e.attackCooldown=.55}
   const dist=d2(e,p);let ang=angleTo(e,p);
+  // Guard specialists are not just purple brawlers: their raised defence
+  // resists ordinary strikes until a heavy/uppercut breaks their stance.
+  e.guarding=e.kind==='guard'&&e.stun<=0&&e.ai!=='strike'&&e.ai!=='windup'&&dist<3.0;
   if(e.ai==='approach'||e.ai==='recover'){
    e.face+=wrap(ang-e.face)*Math.min(1,dt*6);e.moving=0;
    const desired=e.kind==='kicker'?2.10:e.kind==='brute'?1.95:1.65;
@@ -463,7 +2199,7 @@ function createCombat(scene,arena,fx,audio,hooks){
 R.createCombat=createCombat;
 })(window.RAUDRA=window.RAUDRA||{});
 </script><script>(function(R){'use strict';
-const T=THREE,byId=id=>document.getElementById(id),canvas=byId('game'),load=byId('loading');
+const T=THREE,PI=Math.PI,byId=id=>document.getElementById(id),canvas=byId('game'),load=byId('loading');
 let renderer,scene,camera,arena,fx,audio,combat,mode='title',beforePanel='title',heroIndex=0,last=0,elapsed=0,acc=0,shake=0,flashT=0,uiClock=0,winClock=0;
 let previewClock=0;let input={mx:0,my:0,attack:false,block:false},keys=new Set(),stick=null,attackDownAt=0,attackCharged=false,lastCombatState='';
 const _tmp=new T.Vector3(),camGoal=new T.Vector3(),lookGoal=new T.Vector3(),cameraLook=new T.Vector3(),clock=new T.Clock();
@@ -484,7 +2220,7 @@ function endFight(success,data){showMode(success?'win':'lose');byId('end-tag').t
 function panel(fromSettings=false){if(mode!=='paused'&&mode!=='settings')beforePanel=mode;showMode(fromSettings?'settings':'paused');let settingsOnly=fromSettings&&beforePanel!=='fight';byId('panel-eyebrow').textContent=fromSettings?'THE ARENA, YOUR WAY':'THE ACTION IS ON HOLD';byId('panel-title').textContent=fromSettings?'SETTINGS':'PAUSED';byId('settings-area').classList.toggle('hidden',!fromSettings);byId('panel-settings').textContent=fromSettings?'CLOSE SETTINGS':'⚙ SETTINGS';byId('panel-resume').textContent=fromSettings?'BACK':'RESUME';byId('panel-restart').classList.toggle('hidden',settingsOnly);byId('panel-menu').classList.toggle('hidden',settingsOnly)}
 function closePanel(){if(beforePanel==='fight'){showMode('fight');last=performance.now()}else if(beforePanel==='select'){showMode('select')}else showMode('title')}
 function quality(){let mobile=('ontouchstart'in window||navigator.maxTouchPoints>0),w=Math.min(innerWidth,innerHeight);let q=settings.quality==='auto'?(mobile?'low':'high'):settings.quality;let ratio=Math.min(devicePixelRatio||1,q==='low'?Math.min(1.2, (w<400?1.1:1.25)):Math.min(1.8,devicePixelRatio||1));renderer.setPixelRatio(ratio);renderer.shadowMap.enabled=q==='high';renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.setSize(innerWidth,innerHeight,false)}
-function initRenderer(){renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0x080814);renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;quality();scene=new T.Scene();camera=new T.PerspectiveCamera(52,innerWidth/innerHeight,.10,220);camera.position.set(5,3.1,8);cameraLook.set(0,1.7,0);camera.lookAt(cameraLook);
+function initRenderer(){renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0x080814);renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.86;quality();scene=new T.Scene();camera=new T.PerspectiveCamera(52,innerWidth/innerHeight,.10,220);camera.position.set(5,3.1,8);cameraLook.set(0,1.7,0);camera.lookAt(cameraLook);
  arena=R.makeArena(scene);fx=R.createFX(scene,arena);audio=R.createAudio();
  combat=R.createCombat(scene,arena,fx,audio,{
   input:()=>input,
@@ -539,7 +2275,7 @@ function readKeys(){if(mode!=='fight')return;let dx=(keys.has('KeyD')||keys.has(
 let smoothCam=0;function setCamera(dt){let p=combat.player, now=elapsed,cin=combat.cinematic;
  if(mode==='fight'){
   if(cin&&!settings.reducedMotion){let u=cin.t/cin.duration,orbit=PI*.36+u*PI*.38;let target=cin.target||p;camGoal.set((p.x+target.x)/2+Math.sin(orbit)*4.2,2.15+Math.sin(u*PI)*.85,(p.z+target.z)/2+Math.cos(orbit)*4.2);lookGoal.set((p.x+target.x)/2,1.35+u*.4,(p.z+target.z)/2);
-  }else{camGoal.set(p.x*.62+1.0,6.10,p.z+9.05);lookGoal.set(p.x*.68,1.15,p.z-1.5)}
+  }else{camGoal.set(p.x*.70+0.95,4.75,p.z+6.85);lookGoal.set(p.x*.73,1.48,p.z-1.14)}
  }else if(mode==='select'||(mode==='settings'&&beforePanel==='select')){
    camGoal.set(1.8+Math.sin(now*.23)*.85,2.55,4.60+Math.cos(now*.23)*.36);lookGoal.set(.70,1.48,.12);
  }else if(mode==='title'||(mode==='settings'&&beforePanel==='title')){
@@ -556,16 +2292,16 @@ let lastFPS=0,frames=0;function animate(ts){requestAnimationFrame(animate);if(!l
  if(mode==='fight'){acc+=dt;let steps=0;while(acc>=1/60&&steps<3){combat.update(1/60,input);acc-=1/60;steps++}if(steps===3)acc=0}
  else{acc=0;let p=combat.player;if(mode==='title'||mode==='select'||(mode==='settings'&&beforePanel!=='fight')){p.moving=0;p.rage=0;previewClock+=dt;if(p.action){p.actionT+=dt;if(p.actionT>=p.actionLen)p.action=null}else if(mode==='select'&&previewClock>5.2){p.action={type:p.def.style==='mass'?'upper':p.def.style==='swift'?'roundhouse':'hook',hand:1};p.actionT=0;p.actionLen=1.3;previewClock=0}R.animateCharacter(p,dt,elapsed)}}
  const vivo=mode==='fight'?combat.vibe:(mode==='title'?.53:mode==='select'?.70:.48);const vibe=Math.max(0,Math.min(1,vivo*settings.psyche));if(mode!=='paused'&&mode!=='settings'){arena.update(dt,elapsed,vibe);fx.update(dt)}
- if(mode==='fight'){audio.beat(elapsed,'fight',vibe)}else if(mode==='title'||mode==='select'){audio.beat(elapsed,'menu',vibe)}
+ if(mode==='fight'){audio.beat(elapsed,'fight',vibe);byId('psyche-orb').style.opacity=String(settings.reducedMotion?0:Math.min(.58,.10+vibe*.46));}else if(mode==='title'||mode==='select'){byId('psyche-orb').style.opacity='';audio.beat(elapsed,'menu',vibe)}
  if(mode!=='paused'&&mode!=='settings')setCamera(dt);
  if(flashT>0){flashT=Math.max(0,flashT-dt*2.9);byId('impact-flash').style.opacity=String(Math.min(.55,flashT*.53))}else byId('impact-flash').style.opacity='0';
- if(uiClock>.12){uiClock=0;if(mode==='fight')updateHud()}
+ if(uiClock>.12){uiClock=0;if(mode==='fight'){updateHud();byId('combat-hint').style.opacity=String(Math.max(.0,.77-Math.max(0,combat.time-5)*.22))}}
  if(byId('debug').style.display==='block'&&elapsed-lastFPS>1){let fps=Math.round(frames/(elapsed-lastFPS));frames=0;lastFPS=elapsed;byId('debug').textContent=`${fps}FPS | ${JSON.stringify(combat.inspect())} | ${renderer.info.render.calls} calls`}
  renderer.render(scene,camera);
 }
 function boot(){try{
  initRenderer();bind();setHeroIndex(0);combat.player.x=3.05;combat.player.z=0;combat.player.face=.04;showMode('title');audio.setMusic(settings.music);audio.setSfx(settings.sfx);load.classList.add('hidden');requestAnimationFrame(animate);
- window.__RAUDRA={status:()=>({mode,...combat.inspect(),renderer:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}}),start:(id='fury')=>{heroIndex=Math.max(0,R.heroes.findIndex(h=>h.id===id));startFight()},select:(id='fury')=>{select();setHeroIndex(R.heroes.findIndex(h=>h.id===id))},attack:(heavy=false)=>combat.tryAttack(heavy),block:()=>combat.tryBlock(),finisher:()=>{combat.player.rage=100;return combat.finisher()},pause:()=>panel(false),resume:closePanel,game:combat};
+ window.__RAUDRA={status:()=>({mode,...combat.inspect(),audio:{available:audio.available,running:audio.running},renderer:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}}),start:(id='fury')=>{heroIndex=Math.max(0,R.heroes.findIndex(h=>h.id===id));startFight()},select:(id='fury')=>{select();setHeroIndex(R.heroes.findIndex(h=>h.id===id))},attack:(heavy=false)=>combat.tryAttack(heavy),block:()=>combat.tryBlock(),finisher:()=>{combat.player.rage=100;return combat.finisher()},pause:()=>panel(false),resume:closePanel,game:combat};
  }catch(e){console.error('RAUDRA boot failure',e);load.innerHTML='<div style="font:700 20px system-ui;letter-spacing:0;text-align:center;padding:30px">WEBGL STARTUP FAILED<br><small style="font:12px system-ui">'+String(e.message||e).replace(/[<>]/g,'')+'</small></div>'}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })(window.RAUDRA=window.RAUDRA||{});
